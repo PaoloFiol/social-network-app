@@ -10,7 +10,10 @@ const FriendRequestSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// ✅ Prevent duplicate friend requests from the same sender to receiver
-FriendRequestSchema.index({ sender: 1, receiver: 1 }, { unique: true });
+// ✅ Enforce uniqueness only for pending friend requests
+FriendRequestSchema.index(
+  { sender: 1, receiver: 1 },
+  { unique: true, partialFilterExpression: { status: 'pending' } }
+);
 
 module.exports = mongoose.model('FriendRequest', FriendRequestSchema);

@@ -57,21 +57,28 @@ function PostCard({ post, onUpdate }) {
         padding: '1rem',
         margin: '1rem auto',
         backgroundColor: '#fff',
-        maxWidth: '600px',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+        maxWidth: '750px',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
       }}
     >
-      <div style={{ marginBottom: '0.5rem' }}>
+      <div style={{ marginBottom: '0.5rem', textAlign: 'left' }}>
         <strong>
           <Link to={`/profile/${post.user?.username}`}>
             {post.user?.firstName} {post.user?.lastName}
           </Link>
         </strong>{' '}
         (@{post.user?.username})
+        <div style={{ fontSize: '0.85rem', color: '#555', marginTop: '2px' }}>
+          {new Date(post.createdAt).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </div>
       </div>
 
       {post.image && (
-        <div style={{ margin: '1rem 0', width: '100%', paddingTop: '100%', position: 'relative' }}>
+        <div style={{ width: '100%', aspectRatio: '1 / 1', margin: '1rem 0', position: 'relative' }}>
           <img
             src={post.image}
             alt="post"
@@ -88,18 +95,21 @@ function PostCard({ post, onUpdate }) {
         </div>
       )}
 
-      <p style={{ textAlign: 'left' }}>{post.text}</p>
+      <p style={{ textAlign: 'left', fontSize: '15px' }}>{post.text}</p>
 
-      <div style={{ marginTop: '0.5rem' }}>
+      <div style={{ marginTop: '0.5rem', textAlign: 'left' }}>
         <button onClick={handleLike}>❤️ Like ({post.likes.length})</button>
         {post.user?.username === currentUser && (
-          <button onClick={handleDeletePost} style={{ marginLeft: '1rem', color: 'red' }}>
+          <button
+            onClick={handleDeletePost}
+            style={{ marginLeft: '1rem', color: 'red' }}
+          >
             Delete Post
           </button>
         )}
       </div>
 
-      <form onSubmit={handleComment} style={{ marginTop: '1rem' }}>
+      <form onSubmit={handleComment} style={{ marginTop: '1rem', textAlign: 'left' }}>
         <input
           value={comment}
           onChange={e => setComment(e.target.value)}
@@ -108,7 +118,8 @@ function PostCard({ post, onUpdate }) {
             width: '75%',
             padding: '0.5rem',
             borderRadius: '4px',
-            border: '1px solid #ccc'
+            border: '1px solid #ccc',
+            fontSize: '14px'
           }}
         />
         <button type="submit" style={{ marginLeft: '0.5rem' }}>
@@ -143,7 +154,10 @@ function PostCard({ post, onUpdate }) {
           );
         })}
         {comments.length > 2 && (
-          <button onClick={() => setShowAllComments(!showAllComments)} style={{ marginTop: '0.5rem' }}>
+          <button
+            onClick={() => setShowAllComments(!showAllComments)}
+            style={{ marginTop: '0.5rem', fontSize: '13px' }}
+          >
             {showAllComments ? 'Hide comments' : 'Show all comments'}
           </button>
         )}

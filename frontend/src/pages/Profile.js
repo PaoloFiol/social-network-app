@@ -46,6 +46,17 @@ function Profile() {
     }
   };
 
+  const removeFriend = async () => {
+    if (!window.confirm(`Remove ${user.firstName} from your friends?`)) return;
+    try {
+      await API.put('/friends/remove', { friendId: user._id });
+      setFriendStatus('');
+    } catch (err) {
+      console.error('Failed to remove friend:', err);
+      alert(err.response?.data?.message || 'Error removing friend');
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [username]);
@@ -68,7 +79,7 @@ function Profile() {
             {user._id !== currentUserId && (
               <div style={{ marginTop: '1rem' }}>
                 {friendStatus === 'friends' ? (
-                  <button style={disabledBtn} disabled>You are already friends</button>
+                  <button onClick={removeFriend} style={removeBtn}>Remove Friend</button>
                 ) : friendStatus === 'sent' ? (
                   <button style={disabledBtn} disabled>Friend Request Sent</button>
                 ) : (
@@ -88,7 +99,7 @@ function Profile() {
   );
 }
 
-// ✅ Inline styles for Facebook-style layout
+// Styles
 const container = {
   display: 'flex',
   justifyContent: 'center',
@@ -127,6 +138,11 @@ const requestBtn = {
   color: '#fff',
   borderRadius: '4px',
   cursor: 'pointer'
+};
+
+const removeBtn = {
+  ...requestBtn,
+  backgroundColor: '#dc3545'
 };
 
 const disabledBtn = {

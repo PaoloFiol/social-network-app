@@ -34,7 +34,6 @@ exports.markAsSeen = async (req, res) => {
   }
 };
 
-// Optional: Mark individual notification as seen
 exports.markOneAsSeen = async (req, res) => {
   try {
     const notif = await Notification.findOneAndUpdate(
@@ -51,16 +50,15 @@ exports.markOneAsSeen = async (req, res) => {
 };
 
 exports.deleteNotification = async (req, res) => {
-    try {
-      const result = await Notification.findOneAndDelete({
-        _id: req.params.id,
-        user: req.user.id
-      });
-  
-      if (!result) return res.status(404).json({ message: 'Notification not found' });
-      res.json({ message: 'Notification deleted' });
-    } catch (err) {
-      res.status(500).json({ message: 'Error deleting notification', error: err.message });
-    }
-  };
-  
+  try {
+    const result = await Notification.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user.id
+    });
+
+    if (!result) return res.status(404).json({ message: 'Notification not found' });
+    res.json({ message: 'Notification deleted' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting notification', error: err.message });
+  }
+};

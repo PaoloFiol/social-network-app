@@ -23,13 +23,13 @@ function PostForm({ onPost }) {
     <form
       onSubmit={handleSubmit}
       style={{
-        maxWidth: '600px',
+        maxWidth: '750px',
         margin: '0 auto 2rem auto',
         padding: '1rem',
         border: '1px solid #ddd',
         borderRadius: '8px',
         backgroundColor: '#fff',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+        boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
       }}
     >
       <textarea
@@ -42,8 +42,10 @@ function PostForm({ onPost }) {
           padding: '0.75rem',
           borderRadius: '6px',
           border: '1px solid #ccc',
-          marginBottom: '0.5rem',
-          fontSize: '14px'
+          marginBottom: '0.75rem',
+          fontSize: '15px',
+          resize: 'vertical',
+          boxSizing: 'border-box'
         }}
         maxLength={500}
       />
@@ -51,18 +53,20 @@ function PostForm({ onPost }) {
         type="file"
         onChange={e => setImage(e.target.files[0])}
         accept="image/*"
-        style={{ marginBottom: '0.5rem' }}
+        style={{ marginBottom: '0.75rem' }}
       />
       <br />
       <button
         type="submit"
         style={{
-          padding: '0.5rem 1rem',
+          padding: '0.5rem 1.2rem',
           backgroundColor: '#1877f2',
           color: '#fff',
           border: 'none',
           borderRadius: '4px',
-          cursor: 'pointer'
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          fontSize: '14px'
         }}
       >
         Post

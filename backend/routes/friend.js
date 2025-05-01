@@ -5,19 +5,23 @@ const {
   sendFriendRequest,
   getFriendRequests,
   respondToRequest,
-  getFriendsList
+  getFriendsList,
+  removeFriend // ✅ Add this
 } = require('../controllers/friendController');
 
 // 📤 Send a friend request
 router.post('/request', auth, sendFriendRequest);
 
-// 📥 Get incoming friend requests for logged-in user
+// 📥 Get incoming friend requests
 router.get('/requests', auth, getFriendRequests);
 
-// ✅ Accept / ❌ Decline friend request (use { requestId, action } in body)
+// ✅ Accept or Decline friend request
 router.put('/respond', auth, respondToRequest);
 
-// 🧑‍🤝‍🧑 Get current user's friends
+// 🧑‍🤝‍🧑 Get list of current user's friends
 router.get('/list', auth, getFriendsList);
+
+// ❌ Remove a friend
+router.put('/remove', auth, removeFriend); // ✅ Add this route
 
 module.exports = router;

@@ -65,50 +65,47 @@ exports.getFriendRequests = async (req, res) => {
 };
 
 exports.respondToRequest = async (req, res) => {
-    try {
-      const { requestId, action } = req.body;
-      if (!['accept', 'decline'].includes(action)) {
-        return res.status(400).json({ message: 'Invalid action' });
-      }
-  
-      const request = await FriendRequest.findById(requestId);
-      if (!request || request.receiver.toString() !== req.user.id) {
-        return res.status(403).json({ message: 'Not authorized or request not found' });
-      }
-  
-      if (action === 'accept') {
-        request.status = 'accepted';
-        await request.save();
-  
-        await User.findByIdAndUpdate(req.user.id, { $addToSet: { friends: request.sender } });
-        await User.findByIdAndUpdate(request.sender, { $addToSet: { friends: req.user.id } });
-  
-        // ✅ Delete associated notification
-        await Notification.deleteOne({
-          user: req.user.id,
-          fromUser: request.sender,
-          type: 'friend_request'
-        });
-  
-        res.json({ message: 'Friend request accepted' });
-      } else {
-        request.status = 'declined';
-        await request.save();
-  
-        // ✅ Delete associated notification
-        await Notification.deleteOne({
-          user: req.user.id,
-          fromUser: request.sender,
-          type: 'friend_request'
-        });
-  
-        res.json({ message: 'Friend request declined' });
-      }
-    } catch (err) {
-      res.status(500).json({ message: 'Error responding to request', error: err.message });
+  try {
+    const { requestId, action } = req.body;
+    if (!['accept', 'decline'].includes(action)) {
+      return res.status(400).json({ message: 'Invalid action' });
     }
-  };
-  
+
+    const request = await FriendRequest.findById(requestId);
+    if (!request || request.receiver.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized or request not found' });
+    }
+
+    if (action === 'accept') {
+      request.status = 'accepted';
+      await request.save();
+
+      await User.findByIdAndUpdate(req.user.id, { $addToSet: { friends: request.sender } });
+      await User.findByIdAndUpdate(request.sender, { $addToSet: { friends: req.user.id } });
+
+      await Notification.deleteOne({
+        user: req.user.id,
+        fromUser: request.sender,
+        type: 'friend_request'
+      });
+
+      res.json({ message: 'Friend request accepted' });
+    } else {
+      request.status = 'declined';
+      await request.save();
+
+      await Notification.deleteOne({
+        user: req.user.id,
+        fromUser: request.sender,
+        type: 'friend_request'
+      });
+
+      res.json({ message: 'Friend request declined' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: 'Error responding to request', error: err.message });
+  }
+};
 
 exports.getFriendsList = async (req, res) => {
   try {
@@ -122,5 +119,22 @@ exports.getFriendsList = async (req, res) => {
     res.json(sorted);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching friends list', error: err.message });
+  }
+};
+
+exports.removeFriend = async (req, res) => {
+  const { friendId } = req.body;
+
+  if (!friendId) {
+    return res.status(400).json({ message: 'friendId is required.' });
+  }
+
+  try {
+    await User.findByIdAndUpdate(req.user.id, { $pull: { friends: friendId } });
+    await User.findByIdAndUpdate(friendId, { $pull: { friends: req.user.id } });
+
+    res.json({ message: 'Friend removed successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error removing friend', error: err.message });
   }
 };
