@@ -5,7 +5,8 @@ const {
   getNotifications,
   markAsSeen,
   markOneAsSeen,
-  deleteNotification
+  deleteNotification,
+  getUnseenCount
 } = require('../controllers/notificationController');
 
 // ✅ Get all notifications for the logged-in user
@@ -19,5 +20,7 @@ router.put('/mark/:id', auth, markOneAsSeen);
 
 // ✅ Delete a notification
 router.delete('/:id', auth, deleteNotification);
+
+router.get('/unseen-count', auth, getUnseenCount);
 
 module.exports = router;

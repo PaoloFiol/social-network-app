@@ -1,9 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaBell } from 'react-icons/fa';
+import API from '../api';
 
 function Navbar() {
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem('token');
+  const [hasUnseen, setHasUnseen] = useState(false);
+
+  useEffect(() => {
+    const fetchUnseen = async () => {
+      try {
+        const res = await API.get('/notifications/unseen-count');
+        setHasUnseen(res.data.count > 0);
+      } catch (err) {
+        console.error('Failed to fetch unseen notification count', err);
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchUnseen();
+    }
+  }, [isLoggedIn]);
 
   const logout = () => {
     localStorage.clear();
@@ -34,7 +52,17 @@ function Navbar() {
               <Link to="/my-profile" style={linkStyle}>My Profile</Link>
               <Link to="/edit-profile" style={linkStyle}>Edit Profile</Link>
               <Link to="/friends" style={linkStyle}>Friends List</Link>
-              <Link to="/notifications" style={linkStyle}>Notifications</Link>
+              <Link to="/notifications" style={{ ...linkStyle, position: 'relative' }}>
+                Notifications
+                {hasUnseen && (
+                  <FaBell style={{
+                    color: 'red',
+                    marginLeft: '6px',
+                    position: 'relative',
+                    top: '2px'
+                  }} />
+                )}
+              </Link>
             </>
           ) : (
             <>

@@ -91,17 +91,17 @@ exports.respondToRequest = async (req, res) => {
 
       res.json({ message: 'Friend request accepted' });
     } else {
-      request.status = 'declined';
-      await request.save();
-
-      await Notification.deleteOne({
-        user: req.user.id,
-        fromUser: request.sender,
-        type: 'friend_request'
-      });
-
-      res.json({ message: 'Friend request declined' });
-    }
+        // If declined, delete the friend request instead of just marking as declined
+        await FriendRequest.deleteOne({ _id: request._id });
+      
+        await Notification.deleteOne({
+          user: req.user.id,
+          fromUser: request.sender,
+          type: 'friend_request'
+        });
+      
+        res.json({ message: 'Friend request declined' });
+      }
   } catch (err) {
     res.status(500).json({ message: 'Error responding to request', error: err.message });
   }
@@ -123,18 +123,29 @@ exports.getFriendsList = async (req, res) => {
 };
 
 exports.removeFriend = async (req, res) => {
-  const { friendId } = req.body;
-
-  if (!friendId) {
-    return res.status(400).json({ message: 'friendId is required.' });
-  }
-
-  try {
-    await User.findByIdAndUpdate(req.user.id, { $pull: { friends: friendId } });
-    await User.findByIdAndUpdate(friendId, { $pull: { friends: req.user.id } });
-
-    res.json({ message: 'Friend removed successfully.' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error removing friend', error: err.message });
-  }
-};
+    const { friendId } = req.body;
+  
+    if (!friendId) {
+      return res.status(400).json({ message: 'friendId is required.' });
+    }
+  
+    try {
+      // Remove friend references
+      await User.findByIdAndUpdate(req.user.id, { $pull: { friends: friendId } });
+      await User.findByIdAndUpdate(friendId, { $pull: { friends: req.user.id } });
+  
+      // Remove associated accepted friend request
+      await FriendRequest.deleteOne({
+        $or: [
+          { sender: req.user.id, receiver: friendId },
+          { sender: friendId, receiver: req.user.id }
+        ],
+        status: 'accepted'
+      });
+  
+      res.json({ message: 'Friend removed successfully.' });
+    } catch (err) {
+      res.status(500).json({ message: 'Error removing friend', error: err.message });
+    }
+  };
+  

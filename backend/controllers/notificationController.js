@@ -49,6 +49,16 @@ exports.markOneAsSeen = async (req, res) => {
   }
 };
 
+exports.getUnseenCount = async (req, res) => {
+    try {
+      const count = await Notification.countDocuments({ user: req.user.id, seen: false });
+      res.json({ count });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to fetch unseen count', error: err.message });
+    }
+  };
+  
+
 exports.deleteNotification = async (req, res) => {
   try {
     const result = await Notification.findOneAndDelete({
