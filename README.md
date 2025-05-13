@@ -1,23 +1,33 @@
 # Social Network App
 
-A full-stack MERN social network app with user authentication, post creation, comments, likes, and friend requests—styled to resemble Facebook.
+A full-stack MERN social network app with real-time chat, user authentication, profile management, posts, likes, comments, and friend requests—designed with a Facebook-like interface.
 
-## Tech Stack
+## 🧰 Tech Stack
 
-- MongoDB + Mongoose
-- Express.js
-- React.js
-- Node.js
-- Cloudinary (for image uploads)
+- **MongoDB + Mongoose** – database and modeling
+- **Express.js** – server and API logic
+- **React.js** – frontend UI
+- **Node.js** – backend runtime
+- **Cloudinary** – image hosting
+- **Socket.IO** – real-time messaging
+- **JWT** – authentication
+- **Multer** – file uploads
 
-## Features
+## ✨ Features
 
-- Register/Login with profile picture upload
-- Create, like, and comment on posts
-- Friend request system with notifications
-- Editable profiles and real-time updates
+- 🔐 **User Authentication** (JWT-based)
+- 🖼️ **Profile Picture Upload**
+- 📬 **Private Messaging with Real-Time Chat**
+  - Typing indicators
+  - Sender name display
+  - Read receipts
+  - Soft-delete (hides messages only for current user)
+- 🧑‍🤝‍🧑 **Friend Request System**
+- 📝 **Posts with Likes and Comments**
+- 🛠️ **Editable User Profiles**
+- 🔔 **Notifications for Friend Requests, Likes, Comments**
 
-## Getting Started
+## 🚀 Getting Started
 
 ### 1. Clone the repo
 
