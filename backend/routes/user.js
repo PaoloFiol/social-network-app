@@ -5,13 +5,13 @@ const upload = require('../middleware/upload');
 const {
   getMyProfile,
   getUserProfile,
+  getUserById,
   updateMyProfile
 } = require('../controllers/userController');
 
 router.get('/me', auth, getMyProfile);
-router.get('/:username', getUserProfile); // public profile
+router.get('/id/:id', auth, getUserById);        // ✅ new route for ChatView.js
+router.get('/:username', getUserProfile);        // public profile by username
 router.put('/edit', auth, upload.single('profilePic'), updateMyProfile);
-
-// ❌ Removed friend request actions — moved to friendController
 
 module.exports = router;

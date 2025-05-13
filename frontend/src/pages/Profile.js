@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import PostCard from '../components/PostCard';
 
 function Profile() {
@@ -77,9 +77,14 @@ function Profile() {
             <p>{user.aboutMe}</p>
 
             {user._id !== currentUserId && (
-              <div style={{ marginTop: '1rem' }}>
+              <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
                 {friendStatus === 'friends' ? (
-                  <button onClick={removeFriend} style={removeBtn}>Remove Friend</button>
+                  <>
+                    <button onClick={removeFriend} style={removeBtn}>Remove Friend</button>
+                    <Link to={`/messages/${user._id}`}>
+                      <button style={messageBtn}>Message</button>
+                    </Link>
+                  </>
                 ) : friendStatus === 'sent' ? (
                   <button style={disabledBtn} disabled>Friend Request Sent</button>
                 ) : (
@@ -143,6 +148,11 @@ const requestBtn = {
 const removeBtn = {
   ...requestBtn,
   backgroundColor: '#dc3545'
+};
+
+const messageBtn = {
+  ...requestBtn,
+  backgroundColor: '#28a745'
 };
 
 const disabledBtn = {
