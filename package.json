@@ -1,8 +1,13 @@
 {
-    "name": "heroku-root",
+    "name": "social-network-app",
+    "version": "1.0.0",
     "private": true,
     "scripts": {
-      "start": "npm start --prefix backend"
+      "start": "npm start --prefix backend",
+      "heroku-postbuild": "cd frontend && npm install && npm run build"
+    },
+    "engines": {
+      "node": "20.x"
     }
   }
   
