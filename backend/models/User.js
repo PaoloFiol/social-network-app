@@ -17,8 +17,16 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address']
   },
-  firstName: { type: String, required: true, trim: true },
-  lastName: { type: String, required: true, trim: true },
+  firstName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  lastName: {
+    type: String,
+    required: true,
+    trim: true
+  },
   location: {
     city: { type: String, trim: true },
     state: { type: String, trim: true }
@@ -30,14 +38,22 @@ const UserSchema = new mongoose.Schema({
   },
   profilePic: {
     type: String,
-    default: '' // Cloudinary URL
+    default: '' // Cloudinary image URL
   },
   password: {
     type: String,
     required: true,
     minlength: 8
   },
-  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  friends: [
+    { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  ],
+  resetPasswordToken: {
+    type: String // 🔐 Hashed token for password reset
+  },
+  resetPasswordExpires: {
+    type: Date // ⏰ Expiry date for token
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

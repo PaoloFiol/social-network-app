@@ -72,9 +72,14 @@ function Login({ setIsLoggedIn }) {
           style={inputStyle}
         />
         <button type="submit" style={buttonStyle}>Login</button>
-        <p style={{ marginTop: '1rem', fontSize: '14px' }}>
-          Don&apos;t have an account? <Link to="/register">Register</Link>
-        </p>
+        <div style={{ marginTop: '1rem', fontSize: '14px' }}>
+          <p>
+            Don&apos;t have an account? <Link to="/register">Register</Link>
+          </p>
+          <p>
+            <Link to="/forgot-password" style={linkStyle}>Forgot Password?</Link>
+          </p>
+        </div>
       </form>
     </div>
   );
@@ -125,6 +130,11 @@ const buttonStyle = {
   borderRadius: '4px',
   fontWeight: 'bold',
   cursor: 'pointer'
+};
+
+const linkStyle = {
+  color: '#1877f2',
+  textDecoration: 'none'
 };
 
 export default Login;

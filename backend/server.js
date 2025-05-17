@@ -9,18 +9,10 @@ const { Server } = require('socket.io');
 
 dotenv.config();
 
-// Import Routes
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/user');
-const postRoutes = require('./routes/post');
-const friendRoutes = require('./routes/friend');
-const notificationRoutes = require('./routes/notifications');
-const messageRoutes = require('./routes/message');
-
 const app = express();
 const server = http.createServer(app);
 
-// Initialize Socket.IO
+// ✅ Initialize Socket.IO
 const io = new Server(server, {
   cors: {
     origin: 'http://localhost:3000',
@@ -28,21 +20,21 @@ const io = new Server(server, {
   }
 });
 
-// Middleware
+// ✅ Global Middleware
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/posts', postRoutes);
-app.use('/api/friends', friendRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/messages', messageRoutes);
+// ✅ API Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/user'));
+app.use('/api/posts', require('./routes/post'));
+app.use('/api/friends', require('./routes/friend'));
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/messages', require('./routes/message'));
 
-// WebSocket Events
-io.on('connection', socket => {
+// ✅ WebSocket Events
+io.on('connection', (socket) => {
   console.log('🔌 New client connected:', socket.id);
 
   socket.on('joinChat', ({ userId }) => {
@@ -50,12 +42,11 @@ io.on('connection', socket => {
       console.warn('⚠️ joinChat received without a valid userId:', userId);
       return;
     }
-
     socket.join(userId);
     console.log(`🟢 User ${userId} joined their personal chat room`);
   });
 
-  socket.on('privateMessage', msg => {
+  socket.on('privateMessage', (msg) => {
     const to = msg.receiver || msg.to;
     const from = msg.sender || msg.from;
 
@@ -85,13 +76,16 @@ io.on('connection', socket => {
   });
 });
 
-// DB Connection
+// ✅ MongoDB connection and server launch
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    server.listen(process.env.PORT, () => {
-      console.log(`✅ Backend running on port ${process.env.PORT}`);
+    server.listen(process.env.PORT || 5000, () => {
+      console.log(`✅ Backend running on port ${process.env.PORT || 5000}`);
     });
   })
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err);
+  });
 
+// ✅ Export for testing or external usage
 module.exports = { app, server, io };
