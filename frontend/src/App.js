@@ -1,3 +1,4 @@
+// frontend/src/App.js
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -13,6 +14,7 @@ import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import Messages from './pages/Messages';
 import ChatView from './pages/ChatView';
+import { connectSocket } from './utils/socket';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
@@ -20,8 +22,17 @@ function App() {
 
   useEffect(() => {
     const syncLoginState = () => {
-      setIsLoggedIn(!!localStorage.getItem('token'));
+      const tokenExists = !!localStorage.getItem('token');
+      setIsLoggedIn(tokenExists);
+
+      // Connect socket if user is logged in
+      const userId = localStorage.getItem('userId');
+      if (tokenExists && userId) {
+        connectSocket(userId);
+      }
     };
+
+    syncLoginState(); // initial run
     window.addEventListener('storage', syncLoginState);
     return () => window.removeEventListener('storage', syncLoginState);
   }, []);

@@ -1,7 +1,11 @@
-// utils/socket.js
 import { io } from 'socket.io-client';
 
 let socket = null;
+
+const SOCKET_URL =
+  process.env.NODE_ENV === 'production'
+    ? process.env.REACT_APP_SOCKET_URL
+    : 'http://localhost:5000';
 
 export const connectSocket = (userId) => {
   if (!userId) {
@@ -10,9 +14,10 @@ export const connectSocket = (userId) => {
   }
 
   if (!socket || !socket.connected) {
-    socket = io('http://localhost:5000', {
+    socket = io(SOCKET_URL, {
       transports: ['websocket'],
-      autoConnect: true
+      autoConnect: true,
+      withCredentials: true
     });
 
     socket.on('connect', () => {

@@ -16,6 +16,15 @@ const ChatView = () => {
 
   useEffect(() => {
     const socket = getSocket();
+    const id = currentUserId.current;
+  
+    if (socket && id) {
+      socket.emit('joinChat', { userId: id });
+    }
+  }, []);
+  
+  useEffect(() => {
+    const socket = getSocket();
     if (!socket) {
       console.warn('❌ No active socket found in ChatView!');
       return;
