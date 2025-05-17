@@ -91,7 +91,7 @@ exports.forgotPasswordEmail = async (req, res) => {
     user.resetPasswordExpires = expireTime;
     await user.save();
 
-    const resetLink = `http://localhost:3000/reset-password/${token}`;
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
     await sendEmail(user.email, 'Password Reset', `Click to reset: ${resetLink}`);
 
     res.json({ message: 'Password reset link sent to email' });
