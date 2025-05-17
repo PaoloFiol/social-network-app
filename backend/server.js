@@ -22,7 +22,21 @@ const io = new Server(server, {
 });
 
 // ✅ Global Middleware
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000', credentials: true }));
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://social-network-app-pi.vercel.app'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -35,12 +49,12 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/messages', require('./routes/message'));
 
 // ✅ Serve React frontend in production
-if (process.env.NODE_ENV === 'production') {
+/*if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/build')));
   app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../frontend', 'build', 'index.html'));
   });
-}
+}*/
 
 // ✅ WebSocket Events
 io.on('connection', (socket) => {
