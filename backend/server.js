@@ -6,6 +6,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 
 dotenv.config();
 
@@ -15,13 +16,13 @@ const server = http.createServer(app);
 // ✅ Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true
   }
 });
 
 // ✅ Global Middleware
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000', credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -32,6 +33,14 @@ app.use('/api/posts', require('./routes/post'));
 app.use('/api/friends', require('./routes/friend'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/messages', require('./routes/message'));
+
+// ✅ Serve React frontend in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/build')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../frontend', 'build', 'index.html'));
+  });
+}
 
 // ✅ WebSocket Events
 io.on('connection', (socket) => {
@@ -87,5 +96,4 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('❌ MongoDB connection error:', err);
   });
 
-// ✅ Export for testing or external usage
 module.exports = { app, server, io };

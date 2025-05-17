@@ -1,14 +1,18 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "heroku-postbuild": "cd ../frontend && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.6.0",
