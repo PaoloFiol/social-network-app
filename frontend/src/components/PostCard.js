@@ -102,7 +102,7 @@ function PostCard({ post, onUpdate }) {
         <button onClick={handleLike}>❤️ Like ({post.likes.length})</button>
         {post.user?.username === currentUser && (
           <button onClick={handleDeletePost} title="Delete Post" style={{ marginLeft: '1rem', background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}>
-          <FaTrash />
+          🗑️
         </button>
         )}
       </div>
@@ -142,7 +142,7 @@ function PostCard({ post, onUpdate }) {
               </strong>: {c.text}
               {username === currentUser && (
                 <button onClick={() => handleDeleteComment(c._id)} title="Delete Comment" style={{ marginLeft: '0.5rem', background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}>
-                    <FaTrash />
+                    🗑️
                 </button>
               
               )}

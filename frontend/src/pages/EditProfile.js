@@ -84,7 +84,9 @@ function EditProfile() {
           style={inputStyle}
         >
           <option value="">State</option>
-          {['CA','NY','TX','FL','WA','AZ','NV','IL','PA','MI'].map(s => (
+          {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS',
+  'KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY',
+  'NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'].map(s => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
@@ -97,7 +99,8 @@ function EditProfile() {
           maxLength="200"
           style={{ ...inputStyle, height: '80px' }}
         />
-
+        
+        <label style={{ marginBottom: '0.5rem' }}>Change Profile Picture:</label>
         <input
           type="file"
           name="profilePic"
