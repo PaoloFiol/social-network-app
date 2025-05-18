@@ -49,7 +49,7 @@ function PostForm({ onPost }) {
         }}
         maxLength={500}
       />
-      <input
+      <span>Add a Photo: </span><input
         type="file"
         onChange={e => setImage(e.target.files[0])}
         accept="image/*"
