@@ -1,4 +1,3 @@
-// frontend/src/pages/ChatView.js
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import API from '../api';
@@ -17,12 +16,11 @@ const ChatView = () => {
   useEffect(() => {
     const socket = getSocket();
     const id = currentUserId.current;
-  
     if (socket && id) {
       socket.emit('joinChat', { userId: id });
     }
   }, []);
-  
+
   useEffect(() => {
     const socket = getSocket();
     if (!socket) {
@@ -61,7 +59,6 @@ const ChatView = () => {
       try {
         const res = await API.get(`/messages/${userId}`);
         setMessages(res.data);
-
         const userRes = await API.get(`/users/id/${userId}`);
         setChatUser(userRes.data);
       } catch (err) {
@@ -129,18 +126,16 @@ const ChatView = () => {
   return (
     <div style={container}>
       <div style={chatBox}>
-      <h3 style={{ textAlign: 'center', marginBottom: '1rem' }}>
-         {chatUser
-          ? `Chat with ${chatUser.firstName} ${chatUser.lastName}`
-          : 'Loading chat...'}
-      </h3>
-
+        <h3 style={header}>
+          {chatUser
+            ? `Chat with ${chatUser.firstName} ${chatUser.lastName}`
+            : 'Loading chat...'}
+        </h3>
 
         <div style={messageContainer}>
           {messages.map((msg, i) => {
             const isMe = msg.sender === currentUserId.current;
             const text = decryptMessage(msg.content || msg.encryptedText);
-
             const senderName =
               typeof msg.sender === 'object'
                 ? `${msg.sender.firstName || ''} ${msg.sender.lastName || ''}`
@@ -195,8 +190,8 @@ const container = {
   display: 'flex',
   justifyContent: 'center',
   backgroundColor: '#f0f2f5',
-  minHeight: '100vh',
-  padding: '2rem'
+  minHeight: '80vh',
+  padding: '1rem',
 };
 
 const chatBox = {
@@ -204,24 +199,29 @@ const chatBox = {
   maxWidth: '650px',
   backgroundColor: '#fff',
   borderRadius: '8px',
-  padding: '1.5rem',
+  padding: '1rem',
   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'space-between'
+  height: 'calc(85vh - 4rem)',
+};
+
+const header = {
+  textAlign: 'center',
+  marginBottom: '0.5rem',
+  fontSize: '18px',
 };
 
 const messageContainer = {
   flexGrow: 1,
   overflowY: 'auto',
-  maxHeight: '65vh',
-  paddingBottom: '1rem'
+  padding: '0.5rem 0',
+  marginBottom: '0.5rem',
 };
 
 const formStyle = {
   display: 'flex',
   gap: '0.5rem',
-  marginTop: '1rem'
 };
 
 const inputStyle = {

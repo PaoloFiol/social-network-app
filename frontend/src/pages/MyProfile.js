@@ -39,7 +39,7 @@ function MyProfile() {
   );
 }
 
-// ✅ Inline styles
+// ✅ Styles
 const container = {
   display: 'flex',
   flexDirection: 'column',
@@ -55,7 +55,7 @@ const profileCard = {
   borderRadius: '8px',
   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
   width: '100%',
-  maxWidth: '500px',
+  maxWidth: '600px',
   marginBottom: '2rem',
   textAlign: 'center',
 };
@@ -70,7 +70,7 @@ const profilePic = {
 
 const postSection = {
   width: '100%',
-  maxWidth: '600px',
+  maxWidth: '800px', // Match Home feed PostCard width
 };
 
 export default MyProfile;

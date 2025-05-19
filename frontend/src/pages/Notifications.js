@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 function Notifications() {
   const [notifications, setNotifications] = useState([]);
+  const [handledIds, setHandledIds] = useState(new Set());
 
   const fetchNotifications = async () => {
     try {
@@ -17,47 +18,43 @@ function Notifications() {
 
   const handleRespond = async (fromUserId, action, notificationId) => {
     try {
-      const requests = await API.get('/friends/requests');
-      const match = requests.data.find(r => r.sender._id === fromUserId);
+      const { data: requests } = await API.get('/friends/requests');
+      const match = requests.find(r => r.sender._id === fromUserId);
       if (!match) return alert('Request not found or already handled');
-  
+
       await API.put('/friends/respond', {
         requestId: match._id,
         action
       });
-  
-      // ✅ Instead of marking, DELETE the notification
+
       await API.delete(`/notifications/${notificationId}`);
-  
-      // ✅ Remove it from state
-      setNotifications(prev => prev.filter(n => n._id !== notificationId));
+
+      // ✅ Mark it as handled immediately
+      setHandledIds(prev => new Set(prev).add(notificationId));
     } catch (err) {
-      console.error('Error responding to friend request', err);
+      console.error('❌ Error responding to friend request:', err);
     }
   };
-  
 
   useEffect(() => {
     fetchNotifications();
   }, []);
 
+  const visibleNotifications = notifications.filter(n => !handledIds.has(n._id));
+
   return (
     <div style={container}>
       <div style={card}>
         <h2>Notifications</h2>
-        {notifications.length === 0 && <p>No notifications yet.</p>}
+        {visibleNotifications.length === 0 && <p>No notifications yet.</p>}
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {notifications.map(n => (
+          {visibleNotifications.map(n => (
             <li key={n._id} style={notificationItem}>
-              {n.type === 'friend_request' && (
+              {n.type === 'friend_request' && n.fromUser && (
                 <>
                   <div style={infoRow}>
-                    {n.fromUser?.profilePic && (
-                      <img
-                        src={n.fromUser.profilePic}
-                        alt="pfp"
-                        style={pfp}
-                      />
+                    {n.fromUser.profilePic && (
+                      <img src={n.fromUser.profilePic} alt="pfp" style={pfp} />
                     )}
                     <Link to={`/profile/${n.fromUser.username}`} style={linkText}>
                       {n.fromUser.firstName} {n.fromUser.lastName}
@@ -65,16 +62,22 @@ function Notifications() {
                     <span>&nbsp;sent you a friend request</span>
                   </div>
                   <div style={buttonRow}>
-                    <button onClick={() => handleRespond(n.fromUser._id, 'accept', n._id)} style={btn}>
+                    <button
+                      onClick={() => handleRespond(n.fromUser._id, 'accept', n._id)}
+                      style={btn}
+                    >
                       Accept
                     </button>
-                    <button onClick={() => handleRespond(n.fromUser._id, 'decline', n._id)} style={{ ...btn, background: '#ddd', color: '#333' }}>
+                    <button
+                      onClick={() => handleRespond(n.fromUser._id, 'decline', n._id)}
+                      style={{ ...btn, background: '#ddd', color: '#333' }}
+                    >
                       Decline
                     </button>
                   </div>
                 </>
               )}
-              {n.type === 'like' && (
+              {n.type === 'like' && n.fromUser && (
                 <span>
                   <Link to={`/profile/${n.fromUser.username}`} style={linkText}>
                     {n.fromUser.username}
@@ -82,7 +85,7 @@ function Notifications() {
                   liked your post.
                 </span>
               )}
-              {n.type === 'comment' && (
+              {n.type === 'comment' && n.fromUser && (
                 <span>
                   <Link to={`/profile/${n.fromUser.username}`} style={linkText}>
                     {n.fromUser.username}
@@ -104,7 +107,7 @@ const container = {
   justifyContent: 'center',
   padding: '2rem',
   backgroundColor: '#f0f2f5',
-  minHeight: '100vh',
+  minHeight: '85vh',
 };
 
 const card = {

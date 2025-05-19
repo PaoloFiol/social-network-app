@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaTrash } from 'react-icons/fa';
 import API from '../api';
 
 function PostCard({ post, onUpdate }) {
@@ -58,7 +57,7 @@ function PostCard({ post, onUpdate }) {
         padding: '1rem',
         margin: '1rem auto',
         backgroundColor: '#fff',
-        maxWidth: '750px',
+        maxWidth: '800px',
         boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
       }}
     >
@@ -79,17 +78,24 @@ function PostCard({ post, onUpdate }) {
       </div>
 
       {post.image && (
-        <div style={{ width: '100%', aspectRatio: '1 / 1', margin: '1rem 0', position: 'relative' }}>
+        <div style={{
+          width: '100%',
+          maxHeight: '500px',
+          margin: '1rem 0',
+          overflow: 'hidden',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#f9f9f9',
+          borderRadius: '8px'
+        }}>
           <img
             src={post.image}
             alt="post"
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
+              maxWidth: '100%',
+              maxHeight: '500px',
+              objectFit: 'contain',
               borderRadius: '8px'
             }}
           />
@@ -101,9 +107,19 @@ function PostCard({ post, onUpdate }) {
       <div style={{ marginTop: '0.5rem', textAlign: 'left' }}>
         <button onClick={handleLike}>❤️ Like ({post.likes.length})</button>
         {post.user?.username === currentUser && (
-          <button onClick={handleDeletePost} title="Delete Post" style={{ marginLeft: '1rem', background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}>
-          🗑️
-        </button>
+          <button
+            onClick={handleDeletePost}
+            title="Delete Post"
+            style={{
+              marginLeft: '1rem',
+              background: 'none',
+              border: 'none',
+              color: 'red',
+              cursor: 'pointer'
+            }}
+          >
+            🗑️
+          </button>
         )}
       </div>
 
@@ -141,10 +157,19 @@ function PostCard({ post, onUpdate }) {
                 </Link>
               </strong>: {c.text}
               {username === currentUser && (
-                <button onClick={() => handleDeleteComment(c._id)} title="Delete Comment" style={{ marginLeft: '0.5rem', background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}>
-                    🗑️
+                <button
+                  onClick={() => handleDeleteComment(c._id)}
+                  title="Delete Comment"
+                  style={{
+                    marginLeft: '0.5rem',
+                    background: 'none',
+                    border: 'none',
+                    color: 'red',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🗑️
                 </button>
-              
               )}
             </div>
           );

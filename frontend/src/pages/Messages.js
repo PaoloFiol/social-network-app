@@ -84,7 +84,7 @@ const container = {
   justifyContent: 'center',
   padding: '2rem',
   backgroundColor: '#f0f2f5',
-  minHeight: '100vh'
+  minHeight: '85vh'
 };
 
 const card = {
