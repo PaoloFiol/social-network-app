@@ -5,6 +5,7 @@ exports.getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({ user: req.user.id })
       .populate('fromUser', 'username firstName lastName profilePic')
+      .populate('post', '_id text') // 🔍 Add post population
       .sort({ createdAt: -1 });
 
     res.json(notifications.map(n => ({
@@ -12,6 +13,7 @@ exports.getNotifications = async (req, res) => {
       type: n.type,
       seen: n.seen,
       createdAt: n.createdAt,
+      post: n.post ? { _id: n.post._id, text: n.post.text } : null,
       fromUser: n.fromUser ? {
         _id: n.fromUser._id,
         username: n.fromUser.username,
@@ -24,6 +26,7 @@ exports.getNotifications = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch notifications', error: err.message });
   }
 };
+
 
 exports.markAsSeen = async (req, res) => {
   try {
@@ -50,14 +53,13 @@ exports.markOneAsSeen = async (req, res) => {
 };
 
 exports.getUnseenCount = async (req, res) => {
-    try {
-      const count = await Notification.countDocuments({ user: req.user.id, seen: false });
-      res.json({ count });
-    } catch (err) {
-      res.status(500).json({ message: 'Failed to fetch unseen count', error: err.message });
-    }
-  };
-  
+  try {
+    const count = await Notification.countDocuments({ user: req.user.id, seen: false });
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch unseen count', error: err.message });
+  }
+};
 
 exports.deleteNotification = async (req, res) => {
   try {

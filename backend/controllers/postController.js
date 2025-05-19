@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const cloudinary = require('../config/cloudinary');
 
 exports.createPost = async (req, res) => {
@@ -59,7 +60,7 @@ exports.getUserPosts = async (req, res) => {
 
 exports.likePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate('user');
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
     const alreadyLiked = post.likes.includes(req.user.id);
@@ -67,6 +68,15 @@ exports.likePost = async (req, res) => {
       post.likes.pull(req.user.id);
     } else {
       post.likes.push(req.user.id);
+      // ✅ Send notification only if the liker isn't the post owner
+      if (req.user.id !== post.user._id.toString()) {
+        await Notification.create({
+          user: post.user._id,
+          type: 'like',
+          fromUser: req.user.id,
+          post: post._id
+        });
+      }
     }
 
     await post.save();
@@ -77,27 +87,37 @@ exports.likePost = async (req, res) => {
 };
 
 exports.commentOnPost = async (req, res) => {
-    try {
-      const { text } = req.body;
-      if (!text || text.trim().length === 0) {
-        return res.status(400).json({ message: 'Comment cannot be empty' });
-      }
-  
-      const post = await Post.findById(req.params.id);
-      if (!post) return res.status(404).json({ message: 'Post not found' });
-  
-      post.comments.push({ user: req.user.id, text });
-      await post.save();
-  
-      const updated = await Post.findById(post._id)
-        .populate('user', 'username firstName lastName profilePic')
-        .populate('comments.user', 'username firstName lastName profilePic'); // ✅ key fix
-  
-      res.json(updated); // ✅ return entire post
-    } catch (err) {
-      res.status(500).json({ message: 'Server error', error: err.message });
+  try {
+    const { text } = req.body;
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({ message: 'Comment cannot be empty' });
     }
-  };
+
+    const post = await Post.findById(req.params.id).populate('user');
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    post.comments.push({ user: req.user.id, text });
+    await post.save();
+
+    // ✅ Send notification only if commenter isn't the post owner
+    if (req.user.id !== post.user._id.toString()) {
+      await Notification.create({
+        user: post.user._id,
+        type: 'comment',
+        fromUser: req.user.id,
+        post: post._id
+      });
+    }
+
+    const updated = await Post.findById(post._id)
+      .populate('user', 'username firstName lastName profilePic')
+      .populate('comments.user', 'username firstName lastName profilePic');
+
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
   
   
   
