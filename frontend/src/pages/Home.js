@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import API from '../api';
 import PostForm from '../components/PostForm';
 import PostCard from '../components/PostCard';
+import { FaSort } from 'react-icons/fa';
 
 function Home() {
   const [posts, setPosts] = useState([]);
-  const [sortOrder, setSortOrder] = useState('newest'); // 'newest' or 'oldest'
+  const [sortOrder, setSortOrder] = useState('newest'); // 'newest' or 'oldest' or 'mostLiked'
 
   const fetchPosts = async () => {
     const res = await API.get('/posts');
@@ -17,6 +18,9 @@ function Home() {
   }, []);
 
   const sortedPosts = [...posts].sort((a, b) => {
+    if (sortOrder === 'mostLiked') {
+      return b.likes.length - a.likes.length;
+    }
     const dateA = new Date(a.createdAt);
     const dateB = new Date(b.createdAt);
     return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
@@ -27,17 +31,18 @@ function Home() {
       <div style={contentStyle}>
         {/* Sort dropdown */}
         <div style={sortContainerStyle}>
-          <label style={labelStyle}>
-            Sort by:{' '}
-            <select
+          <div style={sortWrapperStyle}>
+            <FaSort style={sortIconStyle} />
+            <select 
               value={sortOrder}
               onChange={e => setSortOrder(e.target.value)}
               style={selectStyle}
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
+              <option value="mostLiked">Most Likes</option>
             </select>
-          </label>
+          </div>
         </div>
 
         <PostForm onPost={fetchPosts} />
@@ -71,18 +76,38 @@ const sortContainerStyle = {
   padding: '0 0.5rem'
 };
 
-const labelStyle = {
-  fontSize: '14px',
-  color: '#666'
+const sortWrapperStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8px',
+  backgroundColor: 'white',
+  padding: '6px 12px',
+  borderRadius: '20px',
+  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+  transition: 'all 0.2s ease',
+  ':hover': {
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)'
+  }
+};
+
+const sortIconStyle = {
+  color: '#666',
+  fontSize: '14px'
 };
 
 const selectStyle = {
-  padding: '0.3rem 0.5rem',
+  padding: '4px 8px',
   borderRadius: '4px',
-  border: '1px solid #ccc',
-  backgroundColor: '#fff',
+  border: 'none',
+  backgroundColor: 'transparent',
   fontSize: '14px',
-  cursor: 'pointer'
+  color: '#1c1e21',
+  cursor: 'pointer',
+  outline: 'none',
+  appearance: 'none',
+  WebkitAppearance: 'none',
+  MozAppearance: 'none',
+  backgroundImage: 'none'
 };
 
 export default Home;
