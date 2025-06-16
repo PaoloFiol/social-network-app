@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../api';
+import { decryptMessage } from '../utils/encryption';
 
 function Messages() {
   const [chats, setChats] = useState([]);
@@ -57,7 +58,7 @@ function Messages() {
                       </strong>
                       <br />
                       <small style={{ color: '#555' }}>
-                        {chat.lastMessage?.content ? 'Click to open' : 'No message yet'}
+                        {chat.lastMessage?.content ? decryptMessage(chat.lastMessage.content) : 'No message yet'}
                       </small>
                     </div>
                   </Link>
@@ -66,7 +67,7 @@ function Messages() {
                     title="Delete Chat"
                     onClick={() => handleDelete(chat.user._id)}
                   >
-                    🗑️
+                    ✕
                   </button>
                 </div>
               </li>
@@ -127,11 +128,21 @@ const link = {
 };
 
 const deleteBtn = {
-  background: 'transparent',
+  background: 'none',
   border: 'none',
-  fontSize: '18px',
+  color: '#ff4444',
   cursor: 'pointer',
-  color: '#cc0000'
+  fontSize: '16px',
+  padding: '4px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '24px',
+  height: '24px',
+  transition: 'color 0.2s',
+  ':hover': {
+    color: '#cc0000'
+  }
 };
 
 export default Messages;

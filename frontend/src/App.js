@@ -44,7 +44,7 @@ function App() {
   return (
     <div className="App">
       <Navbar />
-      <main style={{ maxWidth: '800px', margin: '0 auto', padding: '1rem' }}>
+      <main style={mainStyle}>
         <Routes>
           <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
           <Route path="/register" element={<Register />} />
@@ -64,5 +64,14 @@ function App() {
     </div>
   );
 }
+
+// Styles
+const mainStyle = {
+  maxWidth: '800px',
+  margin: '0 auto',
+  padding: '1rem',
+  width: '100%',
+  boxSizing: 'border-box'
+};
 
 export default App;

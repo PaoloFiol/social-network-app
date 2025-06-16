@@ -4,35 +4,51 @@ import { Link } from 'react-router-dom';
 
 function Notifications() {
   const [notifications, setNotifications] = useState([]);
-  const [handledIds, setHandledIds] = useState(new Set());
+  const [loading, setLoading] = useState(true);
 
   const fetchNotifications = async () => {
     try {
       const res = await API.get('/notifications');
       setNotifications(res.data);
-      await API.put('/notifications/mark-seen');
     } catch (err) {
-      console.error('Failed to load notifications', err);
+      console.error('Failed to fetch notifications:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleRespond = async (fromUserId, action, notificationId) => {
+  const handleRespond = async (userId, response, notificationId) => {
     try {
+      // First get the friend request ID
       const { data: requests } = await API.get('/friends/requests');
-      const match = requests.find(r => r.sender._id === fromUserId);
-      if (!match) return alert('Request not found or already handled');
+      const request = requests.find(r => r.sender._id === userId);
+      
+      if (!request) {
+        throw new Error('Friend request not found');
+      }
 
+      // Then respond to the request using the request ID
       await API.put('/friends/respond', {
-        requestId: match._id,
-        action
+        requestId: request._id,
+        action: response
       });
 
-      await API.delete(`/notifications/${notificationId}`);
-
-      // ✅ Mark it as handled immediately
-      setHandledIds(prev => new Set(prev).add(notificationId));
+      // Remove the notification immediately
+      setNotifications(prev => prev.filter(n => n._id !== notificationId));
     } catch (err) {
-      console.error('❌ Error responding to friend request:', err);
+      console.error('Failed to respond to friend request:', err);
+      alert('Failed to respond to friend request.');
+    }
+  };
+
+  const handleDelete = async (notificationId) => {
+    try {
+      await API.delete(`/notifications/${notificationId}`);
+      // Remove the notification immediately
+      setNotifications(prev => prev.filter(n => n._id !== notificationId));
+    } catch (err) {
+      console.error('Failed to delete notification:', err);
+      alert('Failed to delete notification.');
     }
   };
 
@@ -40,15 +56,15 @@ function Notifications() {
     fetchNotifications();
   }, []);
 
-  const visibleNotifications = notifications.filter(n => !handledIds.has(n._id));
+  if (loading) return <p>Loading notifications...</p>;
 
   return (
     <div style={container}>
       <div style={card}>
         <h2>Notifications</h2>
-        {visibleNotifications.length === 0 && <p>No notifications yet.</p>}
+        {notifications.length === 0 && <p>No notifications yet.</p>}
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {visibleNotifications.map(n => (
+          {notifications.map(n => (
             <li key={n._id} style={notificationItem}>
               {n.type === 'friend_request' && n.fromUser && (
                 <>
@@ -78,20 +94,38 @@ function Notifications() {
                 </>
               )}
               {n.type === 'like' && n.fromUser && (
-                <span>
-                  <Link to={`/profile/${n.fromUser.username}`} style={linkText}>
-                    {n.fromUser.username}
-                  </Link>{' '}
-                  liked your post.
-                </span>
+                <div style={infoRow}>
+                  <div style={{ flex: 1 }}>
+                    <Link to={`/profile/${n.fromUser.username}`} style={linkText}>
+                      {n.fromUser.firstName} {n.fromUser.lastName}
+                    </Link>{' '}
+                    liked your post.
+                  </div>
+                  <button
+                    onClick={() => handleDelete(n._id)}
+                    style={deleteBtn}
+                    title="Delete notification"
+                  >
+                    ✕
+                  </button>
+                </div>
               )}
               {n.type === 'comment' && n.fromUser && (
-                <span>
-                  <Link to={`/profile/${n.fromUser.username}`} style={linkText}>
-                    {n.fromUser.username}
-                  </Link>{' '}
-                  commented on your post.
-                </span>
+                <div style={infoRow}>
+                  <div style={{ flex: 1 }}>
+                    <Link to={`/profile/${n.fromUser.username}`} style={linkText}>
+                      {n.fromUser.firstName} {n.fromUser.lastName}
+                    </Link>{' '}
+                    commented on your post.
+                  </div>
+                  <button
+                    onClick={() => handleDelete(n._id)}
+                    style={deleteBtn}
+                    title="Delete notification"
+                  >
+                    ✕
+                  </button>
+                </div>
               )}
             </li>
           ))}
@@ -151,6 +185,24 @@ const btn = {
   background: '#007bff',
   color: '#fff',
   cursor: 'pointer',
+};
+
+const deleteBtn = {
+  background: 'none',
+  border: 'none',
+  color: '#ff4444',
+  cursor: 'pointer',
+  fontSize: '16px',
+  padding: '4px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '24px',
+  height: '24px',
+  transition: 'color 0.2s',
+  ':hover': {
+    color: '#cc0000'
+  }
 };
 
 const linkText = {

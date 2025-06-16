@@ -23,18 +23,16 @@ function Home() {
   });
 
   return (
-    <div style={{ backgroundColor: '#f0f2f5', minHeight: '100vh', padding: '2rem 0' }}>
-      <div style={{ maxWidth: '750px', margin: '0 auto', padding: '0 1rem' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Home Feed</h2>
-
+    <div style={containerStyle}>
+      <div style={contentStyle}>
         {/* Sort dropdown */}
-        <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
-          <label>
+        <div style={sortContainerStyle}>
+          <label style={labelStyle}>
             Sort by:{' '}
             <select
               value={sortOrder}
               onChange={e => setSortOrder(e.target.value)}
-              style={{ padding: '0.3rem' }}
+              style={selectStyle}
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -50,5 +48,41 @@ function Home() {
     </div>
   );
 }
+
+// Styles
+const containerStyle = {
+  backgroundColor: '#f0f2f5',
+  minHeight: '100vh',
+  padding: '1rem 0',
+  width: '100%'
+};
+
+const contentStyle = {
+  maxWidth: '750px',
+  margin: '0 auto',
+  padding: '0 1rem',
+  width: '100%',
+  boxSizing: 'border-box'
+};
+
+const sortContainerStyle = {
+  textAlign: 'right',
+  marginBottom: '1rem',
+  padding: '0 0.5rem'
+};
+
+const labelStyle = {
+  fontSize: '14px',
+  color: '#666'
+};
+
+const selectStyle = {
+  padding: '0.3rem 0.5rem',
+  borderRadius: '4px',
+  border: '1px solid #ccc',
+  backgroundColor: '#fff',
+  fontSize: '14px',
+  cursor: 'pointer'
+};
 
 export default Home;

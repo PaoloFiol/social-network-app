@@ -50,98 +50,65 @@ function PostCard({ post, onUpdate }) {
   const visibleComments = showAllComments ? comments : comments.slice(-2);
 
   return (
-    <div
-      style={{
-        border: '1px solid #ddd',
-        borderRadius: '8px',
-        padding: '1rem',
-        margin: '1rem auto',
-        backgroundColor: '#fff',
-        maxWidth: '800px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
-      }}
-    >
-      <div style={{ marginBottom: '0.5rem', textAlign: 'left' }}>
-        <strong>
-          <Link to={`/profile/${post.user?.username}`}>
-            {post.user?.firstName} {post.user?.lastName}
-          </Link>
-        </strong>{' '}
-        (@{post.user?.username})
-        <div style={{ fontSize: '0.85rem', color: '#555', marginTop: '2px' }}>
-          {new Date(post.createdAt).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
+    <div style={cardStyle}>
+      <div style={headerStyle}>
+        <div style={headerContentStyle}>
+          <strong>
+            <Link to={`/profile/${post.user?.username}`} style={linkStyle}>
+              {post.user?.firstName} {post.user?.lastName}
+            </Link>
+          </strong>{' '}
+          <span style={usernameStyle}>(@{post.user?.username})</span>
+          <div style={dateStyle}>
+            {new Date(post.createdAt).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </div>
         </div>
-      </div>
-
-      {post.image && (
-        <div style={{
-          width: '100%',
-          maxHeight: '500px',
-          margin: '1rem 0',
-          overflow: 'hidden',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: '#f9f9f9',
-          borderRadius: '8px'
-        }}>
-          <img
-            src={post.image}
-            alt="post"
-            style={{
-              maxWidth: '100%',
-              maxHeight: '500px',
-              objectFit: 'contain',
-              borderRadius: '8px'
-            }}
-          />
-        </div>
-      )}
-
-      <p style={{ textAlign: 'left', fontSize: '15px' }}>{post.text}</p>
-
-      <div style={{ marginTop: '0.5rem', textAlign: 'left' }}>
-        <button onClick={handleLike}>❤️ Like ({post.likes.length})</button>
         {post.user?.username === currentUser && (
           <button
             onClick={handleDeletePost}
             title="Delete Post"
-            style={{
-              marginLeft: '1rem',
-              background: 'none',
-              border: 'none',
-              color: 'red',
-              cursor: 'pointer'
-            }}
+            style={deleteButtonStyle}
           >
-            🗑️
+            ✕
           </button>
         )}
       </div>
 
-      <form onSubmit={handleComment} style={{ marginTop: '1rem', textAlign: 'left' }}>
+      {post.image && (
+        <div style={imageContainerStyle}>
+          <img
+            src={post.image}
+            alt="post"
+            style={imageStyle}
+          />
+        </div>
+      )}
+
+      <p style={textStyle}>{post.text}</p>
+
+      <div style={actionsStyle}>
+        <button onClick={handleLike} style={likeButtonStyle}>
+          ❤️ Like ({post.likes.length})
+        </button>
+      </div>
+
+      <form onSubmit={handleComment} style={commentFormStyle}>
         <input
           value={comment}
           onChange={e => setComment(e.target.value)}
           placeholder="Write a comment..."
-          style={{
-            width: '75%',
-            padding: '0.5rem',
-            borderRadius: '4px',
-            border: '1px solid #ccc',
-            fontSize: '14px'
-          }}
+          style={commentInputStyle}
         />
-        <button type="submit" style={{ marginLeft: '0.5rem' }}>
+        <button type="submit" style={commentButtonStyle}>
           Comment
         </button>
       </form>
 
-      <div style={{ marginTop: '1rem', textAlign: 'left' }}>
+      <div style={commentsContainerStyle}>
         {visibleComments.map((c) => {
           const user = typeof c.user === 'object' ? c.user : null;
           const username = user?.username || 'unknown';
@@ -150,25 +117,35 @@ function PostCard({ post, onUpdate }) {
             : username;
 
           return (
-            <div key={c._id} style={{ marginBottom: '0.5rem' }}>
-              <strong>
-                <Link to={`/profile/${username}`}>
-                  {fullName}
-                </Link>
-              </strong>: {c.text}
+            <div key={c._id} style={commentItemStyle}>
+              <div style={commentContentStyle}>
+                <strong>
+                  <Link to={`/profile/${username}`} style={commentLinkStyle}>
+                    {fullName}
+                  </Link>
+                </strong>
+                <span style={commentTextStyle}>: {c.text}</span>
+              </div>
               {username === currentUser && (
                 <button
                   onClick={() => handleDeleteComment(c._id)}
                   title="Delete Comment"
                   style={{
-                    marginLeft: '0.5rem',
                     background: 'none',
+                    color: '#ff4444',
                     border: 'none',
-                    color: 'red',
-                    cursor: 'pointer'
+                    marginLeft: '8px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    padding: '0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'color 0.2s'
                   }}
                 >
-                  🗑️
+                  ✕
                 </button>
               )}
             </div>
@@ -177,7 +154,7 @@ function PostCard({ post, onUpdate }) {
         {comments.length > 2 && (
           <button
             onClick={() => setShowAllComments(!showAllComments)}
-            style={{ marginTop: '0.5rem', fontSize: '13px' }}
+            style={showMoreButtonStyle}
           >
             {showAllComments ? 'Hide comments' : 'Show all comments'}
           </button>
@@ -186,5 +163,174 @@ function PostCard({ post, onUpdate }) {
     </div>
   );
 }
+
+// Styles
+const cardStyle = {
+  border: '1px solid #ddd',
+  borderRadius: '8px',
+  padding: '1.5rem',
+  margin: '1rem auto',
+  backgroundColor: '#fff',
+  maxWidth: '800px',
+  boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+  width: '100%',
+  boxSizing: 'border-box'
+};
+
+const headerStyle = {
+  marginBottom: '1rem',
+  textAlign: 'left',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start'
+};
+
+const headerContentStyle = {
+  flex: 1
+};
+
+const linkStyle = {
+  color: '#1877f2',
+  textDecoration: 'none',
+  fontSize: '15px'
+};
+
+const usernameStyle = {
+  color: '#65676b',
+  fontSize: '14px'
+};
+
+const dateStyle = {
+  fontSize: '13px',
+  color: '#65676b',
+  marginTop: '4px'
+};
+
+const imageContainerStyle = {
+  width: '100%',
+  maxHeight: '500px',
+  margin: '1rem 0',
+  overflow: 'hidden',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#f9f9f9',
+  borderRadius: '8px'
+};
+
+const imageStyle = {
+  maxWidth: '100%',
+  maxHeight: '500px',
+  objectFit: 'contain',
+  borderRadius: '8px'
+};
+
+const textStyle = {
+  textAlign: 'left',
+  fontSize: '15px',
+  lineHeight: '1.5',
+  margin: '1rem 0'
+};
+
+const actionsStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1rem',
+  marginTop: '1rem'
+};
+
+const likeButtonStyle = {
+  background: 'none',
+  border: 'none',
+  color: '#1877f2',
+  cursor: 'pointer',
+  fontSize: '14px',
+  padding: '0.5rem',
+  borderRadius: '4px',
+  transition: 'background-color 0.2s'
+};
+
+const commentFormStyle = {
+  marginTop: '1rem',
+  textAlign: 'left',
+  display: 'flex',
+  gap: '0.5rem'
+};
+
+const commentInputStyle = {
+  flex: 1,
+  padding: '0.75rem',
+  borderRadius: '4px',
+  border: '1px solid #ccc',
+  fontSize: '14px'
+};
+
+const commentButtonStyle = {
+  padding: '0.75rem 1rem',
+  backgroundColor: '#1877f2',
+  color: 'white',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  fontSize: '14px',
+  transition: 'background-color 0.2s'
+};
+
+const commentsContainerStyle = {
+  marginTop: '1rem',
+  textAlign: 'left'
+};
+
+const commentItemStyle = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  marginBottom: '0.75rem',
+  padding: '0.5rem',
+  borderRadius: '4px',
+  backgroundColor: '#f0f2f5'
+};
+
+const commentContentStyle = {
+  flex: 1,
+  marginRight: '0.5rem'
+};
+
+const commentLinkStyle = {
+  color: '#1877f2',
+  textDecoration: 'none',
+  fontSize: '14px'
+};
+
+const commentTextStyle = {
+  fontSize: '14px',
+  color: '#1c1e21'
+};
+
+const showMoreButtonStyle = {
+  background: 'none',
+  border: 'none',
+  color: '#1877f2',
+  cursor: 'pointer',
+  fontSize: '13px',
+  padding: '0.5rem 0',
+  marginTop: '0.5rem',
+  transition: 'color 0.2s'
+};
+
+const deleteButtonStyle = {
+  background: 'none',
+  color: '#ff4444',
+  border: 'none',
+  cursor: 'pointer',
+  fontSize: '20px',
+  fontWeight: 'bold',
+  padding: '0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'color 0.2s',
+  marginLeft: '10px'
+};
 
 export default PostCard;
