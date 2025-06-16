@@ -251,29 +251,31 @@ const likeButtonStyle = {
 };
 
 const commentFormStyle = {
-  marginTop: '1rem',
-  textAlign: 'left',
   display: 'flex',
-  gap: '0.5rem'
+  gap: '0.5rem',
+  marginTop: '1rem',
+  flexWrap: 'wrap'
 };
 
 const commentInputStyle = {
   flex: 1,
-  padding: '0.75rem',
+  minWidth: '200px',
+  padding: '0.5rem',
+  border: '1px solid #ddd',
   borderRadius: '4px',
-  border: '1px solid #ccc',
   fontSize: '14px'
 };
 
 const commentButtonStyle = {
-  padding: '0.75rem 1rem',
+  padding: '0.5rem 1rem',
   backgroundColor: '#1877f2',
   color: 'white',
   border: 'none',
   borderRadius: '4px',
   cursor: 'pointer',
   fontSize: '14px',
-  transition: 'background-color 0.2s'
+  whiteSpace: 'nowrap',
+  minWidth: 'fit-content'
 };
 
 const commentsContainerStyle = {
