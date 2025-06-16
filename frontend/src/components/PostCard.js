@@ -119,31 +119,29 @@ function PostCard({ post, onUpdate }) {
           return (
             <div key={c._id} style={commentItemStyle}>
               <div style={commentContentStyle}>
-                <strong>
-                  <Link to={`/profile/${username}`} style={commentLinkStyle}>
-                    {fullName}
-                  </Link>
-                </strong>
-                <span style={commentTextStyle}>: {c.text}</span>
+                <div style={commentHeaderStyle}>
+                  <div style={commentUserStyle}>
+                    <strong>
+                      <Link to={`/profile/${username}`} style={commentLinkStyle}>
+                        {fullName}
+                      </Link>
+                    </strong>
+                    <span style={commentTextStyle}>: {c.text}</span>
+                  </div>
+                  <span style={commentDateStyle}>
+                    {new Date(c.createdAt).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
               </div>
               {username === currentUser && (
                 <button
                   onClick={() => handleDeleteComment(c._id)}
                   title="Delete Comment"
-                  style={{
-                    background: 'none',
-                    color: '#ff4444',
-                    border: 'none',
-                    marginLeft: '8px',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    padding: '0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'color 0.2s'
-                  }}
+                  style={deleteCommentButtonStyle}
                 >
                   ✕
                 </button>
@@ -304,9 +302,35 @@ const commentLinkStyle = {
   fontSize: '14px'
 };
 
+const commentHeaderStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  width: '100%',
+  gap: '8px'
+};
+
+const commentUserStyle = {
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: '0px',
+  flex: 1,
+  minWidth: 0
+};
+
 const commentTextStyle = {
   fontSize: '14px',
-  color: '#1c1e21'
+  color: '#1c1e21',
+  wordBreak: 'break-word',
+  flex: 1,
+  minWidth: 0
+};
+
+const commentDateStyle = {
+  fontSize: '12px',
+  color: '#65676b',
+  whiteSpace: 'nowrap',
+  flexShrink: 0
 };
 
 const showMoreButtonStyle = {
@@ -333,6 +357,21 @@ const deleteButtonStyle = {
   justifyContent: 'center',
   transition: 'color 0.2s',
   marginLeft: '10px'
+};
+
+const deleteCommentButtonStyle = {
+  background: 'none',
+  color: '#ff4444',
+  border: 'none',
+  marginLeft: '8px',
+  cursor: 'pointer',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  padding: '0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'color 0.2s'
 };
 
 export default PostCard;
