@@ -1,24 +1,47 @@
 import React, { useState } from 'react';
 import API from '../api';
+import { useNavigate } from 'react-router-dom';
+import { FaImage } from 'react-icons/fa';
 
-function PostForm({ onPost }) {
+function PostForm({ onPostCreated }) {
   const [text, setText] = useState('');
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isLoggedIn = !!localStorage.getItem('token');
+  const navigate = useNavigate();
   const [charCount, setCharCount] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!text || text.length > 500) return alert('Post must be between 1–500 characters');
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    if (!text.trim() && !image) return;
 
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append('text', text);
-    if (image) formData.append('image', image);
+    if (image) {
+      formData.append('image', image);
+    }
 
-    await API.post('/posts', formData);
-    setText('');
-    setImage(null);
-    setCharCount(0);
-    onPost();
+    try {
+      await API.post('/posts', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setText('');
+      setImage(null);
+      setImagePreview(null);
+      onPostCreated();
+    } catch (err) {
+      console.error('Failed to create post:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleTextChange = (e) => {
@@ -26,14 +49,45 @@ function PostForm({ onPost }) {
     setCharCount(e.target.value.length);
   };
 
+  const handleImageChange = (e) => {
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    setImage(null);
+    setImagePreview(null);
+  };
+
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
       <textarea
-        placeholder="What's on your mind?"
+        placeholder={isLoggedIn ? "What's on your mind?" : "Login to create a post"}
         value={text}
         onChange={handleTextChange}
         rows={3}
-        style={textareaStyle}
+        style={{
+          ...textareaStyle,
+          cursor: isLoggedIn ? 'text' : 'pointer',
+          opacity: isLoggedIn ? 1 : 0.7
+        }}
+        onClick={() => !isLoggedIn && navigate('/login')}
+        readOnly={!isLoggedIn}
         maxLength={500}
       />
       <div style={charCountStyle}>
@@ -42,39 +96,58 @@ function PostForm({ onPost }) {
       
       <div style={buttonContainerStyle}>
         <div style={imageUploadContainer}>
-          <label htmlFor="image-upload" style={imageUploadLabel}>
-            <span style={uploadIcon}>📷</span>
-            {image ? 'Change Image' : 'Add Photo'}
+          <label 
+            htmlFor="image-upload" 
+            style={{
+              ...imageUploadLabel,
+              cursor: isLoggedIn ? 'pointer' : 'default',
+              opacity: isLoggedIn ? 1 : 0.7
+            }}
+            onClick={(e) => !isLoggedIn && (e.preventDefault(), navigate('/login'))}
+          >
+            <FaImage style={uploadIcon} />
+            Add Photo
           </label>
           <input
             id="image-upload"
             type="file"
-            onChange={e => setImage(e.target.files[0])}
             accept="image/*"
+            onChange={handleImageChange}
             style={fileInputStyle}
+            disabled={!isLoggedIn}
           />
-          {image && (
-            <div style={imagePreviewContainer}>
-              <span style={imageNameStyle}>{image.name}</span>
-              <button
-                type="button"
-                onClick={() => setImage(null)}
-                style={removeImageButton}
-              >
-                ✕
-              </button>
-            </div>
-          )}
         </div>
 
-        <button
-          type="submit"
-          style={submitButton}
-          disabled={!text.trim()}
+        <button 
+          type="submit" 
+          style={{
+            ...submitButtonStyle,
+            cursor: isLoggedIn ? 'pointer' : 'default',
+            opacity: isLoggedIn ? 1 : 0.7
+          }}
+          disabled={isSubmitting || (!isLoggedIn && !text.trim() && !image)}
         >
-          Post
+          {isSubmitting ? 'Posting...' : 'Post'}
         </button>
       </div>
+
+      {imagePreview && (
+        <div style={imagePreviewContainer}>
+          <img 
+            src={imagePreview} 
+            alt="Preview" 
+            style={{ maxWidth: '100px', maxHeight: '100px' }} 
+          />
+          <span style={imageNameStyle}>{image.name}</span>
+          <button 
+            type="button" 
+            onClick={removeImage}
+            style={removeImageButton}
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </form>
   );
 }
@@ -151,6 +224,17 @@ const fileInputStyle = {
   display: 'none'
 };
 
+const submitButtonStyle = {
+  padding: '0.5rem 1.5rem',
+  backgroundColor: '#1877f2',
+  color: 'white',
+  border: 'none',
+  borderRadius: '4px',
+  fontSize: '14px',
+  fontWeight: '500',
+  transition: 'background-color 0.2s'
+};
+
 const imagePreviewContainer = {
   display: 'flex',
   alignItems: 'center',
@@ -179,23 +263,6 @@ const removeImageButton = {
   padding: '0.25rem',
   borderRadius: '4px',
   transition: 'background-color 0.2s'
-};
-
-const submitButton = {
-  padding: '0.75rem 1.5rem',
-  backgroundColor: '#1877f2',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-  fontSize: '14px',
-  transition: 'background-color 0.2s',
-  opacity: 1,
-  ':disabled': {
-    opacity: 0.7,
-    cursor: 'not-allowed'
-  }
 };
 
 export default PostForm;

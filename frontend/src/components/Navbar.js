@@ -121,21 +121,21 @@ function Navbar() {
           </Link>
         </div>
 
-        {isLoggedIn && (
-          <>
-            {/* Mobile Menu Button */}
-            <button 
-              className="mobile-menu-button"
-              style={{
-                ...mobileMenuButton,
-                display: window.innerWidth <= 768 ? 'block' : 'none'
-              }}
-              onClick={toggleMobileMenu}
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-            >
-              {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
-            </button>
+        {/* Mobile Menu Button */}
+        <button 
+          className="mobile-menu-button"
+          style={{
+            ...mobileMenuButton,
+            display: window.innerWidth <= 768 ? 'block' : 'none'
+          }}
+          onClick={toggleMobileMenu}
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+        >
+          {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+        </button>
 
+        {isLoggedIn ? (
+          <>
             {/* Desktop Navigation */}
             <div 
               className="desktop-nav" 
@@ -162,7 +162,42 @@ function Navbar() {
               }}
             >
               <div style={mobileMenuContent}>
-                {renderNavLinks()}
+                <Link to="/" style={mobileLinkStyle}>
+                  <FaHome style={iconStyle} />
+                  <span style={linkText}>Home</span>
+                </Link>
+                
+                <Link to="/my-profile" style={mobileLinkStyle}>
+                  <FaUser style={iconStyle} />
+                  <span style={linkText}>My Profile</span>
+                </Link>
+                
+                <Link to="/edit-profile" style={mobileLinkStyle}>
+                  <FaUserEdit style={iconStyle} />
+                  <span style={linkText}>Edit Profile</span>
+                </Link>
+                
+                <Link to="/friends" style={mobileLinkStyle}>
+                  <FaUsers style={iconStyle} />
+                  <span style={linkText}>Friends</span>
+                </Link>
+
+                <Link to="/messages" style={mobileLinkStyle}>
+                  <div style={iconContainer}>
+                    <FaEnvelope style={iconStyle} />
+                    {hasUnreadMessages && <span style={notificationBadge} />}
+                  </div>
+                  <span style={linkText}>Messages</span>
+                </Link>
+
+                <Link to="/notifications" style={mobileLinkStyle}>
+                  <div style={iconContainer}>
+                    <FaBell style={iconStyle} />
+                    {hasUnseenNotifications && <span style={notificationBadge} />}
+                  </div>
+                  <span style={linkText}>Notifications</span>
+                </Link>
+
                 <button onClick={logout} style={mobileLogoutButton}>
                   <FaSignOutAlt style={iconStyle} />
                   <span style={linkText}>Log out</span>
@@ -170,19 +205,52 @@ function Navbar() {
               </div>
             </div>
           </>
-        )}
-
-        {!isLoggedIn && (
-          <div style={navLinks}>
-            <div style={centerNavLinks}>
-              <Link to="/login" style={linkStyle}>
-                <span style={linkText}>Login</span>
-              </Link>
-              <Link to="/register" style={linkStyle}>
-                <span style={linkText}>Register</span>
-              </Link>
+        ) : (
+          <>
+            {/* Desktop Navigation for non-logged-in users */}
+            <div 
+              className="desktop-nav" 
+              style={{
+                ...desktopNavLinks,
+                display: window.innerWidth <= 768 ? 'none' : 'flex'
+              }}
+            >
+              <div style={centerNavLinks}>
+                <Link to="/" style={linkStyle}>
+                  <FaHome style={iconStyle} />
+                  <span style={linkText}>Home</span>
+                </Link>
+                <Link to="/login" style={linkStyle}>
+                  <span style={linkText}>Login</span>
+                </Link>
+                <Link to="/register" style={linkStyle}>
+                  <span style={linkText}>Register</span>
+                </Link>
+              </div>
             </div>
-          </div>
+
+            {/* Mobile Navigation for non-logged-in users */}
+            <div 
+              className="mobile-menu"
+              style={{ 
+                ...(isMobileMenuOpen ? mobileMenuOpen : mobileMenuClosed),
+                display: window.innerWidth <= 768 ? (isMobileMenuOpen ? 'flex' : 'none') : 'none'
+              }}
+            >
+              <div style={mobileMenuContent}>
+                <Link to="/" style={mobileLinkStyle}>
+                  <FaHome style={iconStyle} />
+                  <span style={linkText}>Home</span>
+                </Link>
+                <Link to="/login" style={mobileLinkStyle}>
+                  <span style={linkText}>Login</span>
+                </Link>
+                <Link to="/register" style={mobileLinkStyle}>
+                  <span style={linkText}>Register</span>
+                </Link>
+              </div>
+            </div>
+          </>
         )}
       </div>
     </nav>

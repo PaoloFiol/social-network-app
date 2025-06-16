@@ -7,10 +7,15 @@ import { FaSort } from 'react-icons/fa';
 function Home() {
   const [posts, setPosts] = useState([]);
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest' or 'oldest' or 'mostLiked'
+  const isLoggedIn = !!localStorage.getItem('token');
 
   const fetchPosts = async () => {
-    const res = await API.get('/posts');
-    setPosts(res.data);
+    try {
+      const res = await API.get('/posts');
+      setPosts(res.data);
+    } catch (err) {
+      console.error('Error fetching posts:', err);
+    }
   };
 
   useEffect(() => {
@@ -45,7 +50,7 @@ function Home() {
           </div>
         </div>
 
-        <PostForm onPost={fetchPosts} />
+        <PostForm onPostCreated={fetchPosts} />
         {sortedPosts.map(post => (
           <PostCard key={post._id} post={post} onUpdate={fetchPosts} />
         ))}
@@ -102,7 +107,6 @@ const selectStyle = {
   backgroundColor: 'transparent',
   fontSize: '14px',
   color: '#1c1e21',
-  cursor: 'pointer',
   outline: 'none',
   appearance: 'none',
   WebkitAppearance: 'none',

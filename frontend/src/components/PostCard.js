@@ -7,19 +7,21 @@ function PostCard({ post, onUpdate }) {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const currentUser = localStorage.getItem('username');
+  const isLoggedIn = !!localStorage.getItem('token');
 
   useEffect(() => {
     setComments(post.comments || []);
   }, [post.comments]);
 
   const handleLike = async () => {
+    if (!isLoggedIn) return;
     await API.put(`/posts/${post._id}/like`);
     onUpdate();
   };
 
   const handleComment = async (e) => {
     e.preventDefault();
-    if (!comment.trim()) return;
+    if (!isLoggedIn || !comment.trim()) return;
     try {
       const res = await API.put(`/posts/${post._id}/comment`, { text: comment });
       setComments(res.data.comments);
@@ -30,6 +32,7 @@ function PostCard({ post, onUpdate }) {
   };
 
   const handleDeletePost = async () => {
+    if (!isLoggedIn) return;
     if (window.confirm('Delete this post?')) {
       await API.delete(`/posts/${post._id}`);
       onUpdate();
@@ -37,6 +40,7 @@ function PostCard({ post, onUpdate }) {
   };
 
   const handleDeleteComment = async (commentId) => {
+    if (!isLoggedIn) return;
     if (window.confirm('Delete this comment?')) {
       try {
         const res = await API.delete(`/posts/${post._id}/comments/${commentId}`);
@@ -67,7 +71,7 @@ function PostCard({ post, onUpdate }) {
             })}
           </div>
         </div>
-        {post.user?.username === currentUser && (
+        {isLoggedIn && post.user?.username === currentUser && (
           <button
             onClick={handleDeletePost}
             title="Delete Post"
@@ -91,22 +95,31 @@ function PostCard({ post, onUpdate }) {
       <p style={textStyle}>{post.text}</p>
 
       <div style={actionsStyle}>
-        <button onClick={handleLike} style={likeButtonStyle}>
+        <button 
+          onClick={handleLike} 
+          style={{
+            ...likeButtonStyle,
+            cursor: isLoggedIn ? 'pointer' : 'default',
+            opacity: isLoggedIn ? 1 : 0.7
+          }}
+        >
           ❤️ Like ({post.likes.length})
         </button>
       </div>
 
-      <form onSubmit={handleComment} style={commentFormStyle}>
-        <input
-          value={comment}
-          onChange={e => setComment(e.target.value)}
-          placeholder="Write a comment..."
-          style={commentInputStyle}
-        />
-        <button type="submit" style={commentButtonStyle}>
-          Comment
-        </button>
-      </form>
+      {isLoggedIn && (
+        <form onSubmit={handleComment} style={commentFormStyle}>
+          <input
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="Write a comment..."
+            style={commentInputStyle}
+          />
+          <button type="submit" style={commentButtonStyle}>
+            Comment
+          </button>
+        </form>
+      )}
 
       <div style={commentsContainerStyle}>
         {visibleComments.map((c) => {
@@ -137,7 +150,7 @@ function PostCard({ post, onUpdate }) {
                   </span>
                 </div>
               </div>
-              {username === currentUser && (
+              {isLoggedIn && username === currentUser && (
                 <button
                   onClick={() => handleDeleteComment(c._id)}
                   title="Delete Comment"
@@ -152,7 +165,11 @@ function PostCard({ post, onUpdate }) {
         {comments.length > 2 && (
           <button
             onClick={() => setShowAllComments(!showAllComments)}
-            style={showMoreButtonStyle}
+            style={{
+              ...showMoreButtonStyle,
+              cursor: isLoggedIn ? 'pointer' : 'default',
+              opacity: isLoggedIn ? 1 : 0.7
+            }}
           >
             {showAllComments ? 'Hide comments' : 'Show all comments'}
           </button>
