@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import API from '../api';
 import PostForm from '../components/PostForm';
 import PostCard from '../components/PostCard';
-import { FaSort } from 'react-icons/fa';
+import { FaBolt, FaComments, FaImage, FaSort, FaUserFriends } from 'react-icons/fa';
 
 function Home() {
   const [posts, setPosts] = useState([]);
-  const [sortOrder, setSortOrder] = useState('newest'); // 'newest' or 'oldest' or 'mostLiked'
+  const [sortOrder, setSortOrder] = useState('newest');
   const isLoggedIn = !!localStorage.getItem('token');
 
   const fetchPosts = async () => {
@@ -26,92 +27,85 @@ function Home() {
     if (sortOrder === 'mostLiked') {
       return b.likes.length - a.likes.length;
     }
+
     const dateA = new Date(a.createdAt);
     const dateB = new Date(b.createdAt);
     return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
   });
 
   return (
-    <div style={containerStyle}>
-      <div style={contentStyle}>
-        {/* Sort dropdown */}
-        <div style={sortContainerStyle}>
-          <div style={sortWrapperStyle}>
-            <FaSort style={sortIconStyle} />
-            <select 
-              value={sortOrder}
-              onChange={e => setSortOrder(e.target.value)}
-              style={selectStyle}
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="mostLiked">Most Likes</option>
-            </select>
+    <div className="home-shell">
+      {!isLoggedIn && (
+        <section className="home-hero" aria-labelledby="home-hero-title">
+          <div>
+            <p className="eyebrow">Community Feed</p>
+            <h1 id="home-hero-title">A full-stack social app with real-time features.</h1>
+            <p>
+              Create profiles, share photo posts, like and comment, manage friends,
+              and chat through a polished MERN-style application.
+            </p>
+            <div className="hero-actions">
+              <Link className="button-primary" to="/register">Create account</Link>
+              <Link className="button-secondary" to="/login">Log in</Link>
+            </div>
           </div>
+
+          <div className="feature-panel" aria-label="App highlights">
+            <div className="feature-item"><FaComments /> Real-time private messaging</div>
+            <div className="feature-item"><FaUserFriends /> Friend requests and profile discovery</div>
+            <div className="feature-item"><FaImage /> Photo posts with likes and comments</div>
+            <div className="feature-item"><FaBolt /> Notifications for social activity</div>
+          </div>
+        </section>
+      )}
+
+      <section className="feed-grid" aria-label="Social feed">
+        <div className="feed-column">
+          <div className="feed-toolbar">
+            <div>
+              <h2>{isLoggedIn ? 'Your feed' : 'Public feed preview'}</h2>
+            </div>
+
+            <label className="sort-control">
+              <FaSort aria-hidden="true" />
+              <span className="sr-only">Sort posts</span>
+              <select
+                value={sortOrder}
+                onChange={e => setSortOrder(e.target.value)}
+                aria-label="Sort posts"
+              >
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="mostLiked">Most liked</option>
+              </select>
+            </label>
+          </div>
+
+          <PostForm onPostCreated={fetchPosts} />
+
+          {sortedPosts.length > 0 ? (
+            sortedPosts.map(post => (
+              <PostCard key={post._id} post={post} onUpdate={fetchPosts} />
+            ))
+          ) : (
+            <div className="empty-feed">
+              <strong>No posts yet.</strong>
+              <p>Be the first to start the conversation.</p>
+            </div>
+          )}
         </div>
 
-        <PostForm onPostCreated={fetchPosts} />
-        {sortedPosts.map(post => (
-          <PostCard key={post._id} post={post} onUpdate={fetchPosts} />
-        ))}
-      </div>
+        <aside className="sidebar-card" aria-label="Project summary">
+          <h3>Project snapshot</h3>
+          <p>
+            Built with React, Express, MongoDB, JWT auth, image uploads, and Socket.IO
+            messaging. Designed to show full-stack product flow beyond a static demo.
+          </p>
+          {!isLoggedIn && <Link className="button-secondary" to="/register">Try the app</Link>}
+        </aside>
+      </section>
     </div>
   );
 }
-
-// Styles
-const containerStyle = {
-  backgroundColor: '#f0f2f5',
-  minHeight: '100vh',
-  padding: '1rem 0',
-  width: '100%'
-};
-
-const contentStyle = {
-  maxWidth: '750px',
-  margin: '0 auto',
-  padding: '0 1rem',
-  width: '100%',
-  boxSizing: 'border-box'
-};
-
-const sortContainerStyle = {
-  textAlign: 'right',
-  marginBottom: '1rem',
-  padding: '0 0.5rem'
-};
-
-const sortWrapperStyle = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '8px',
-  backgroundColor: 'white',
-  padding: '6px 12px',
-  borderRadius: '20px',
-  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-  transition: 'all 0.2s ease',
-  ':hover': {
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)'
-  }
-};
-
-const sortIconStyle = {
-  color: '#666',
-  fontSize: '14px'
-};
-
-const selectStyle = {
-  padding: '4px 8px',
-  borderRadius: '4px',
-  border: 'none',
-  backgroundColor: 'transparent',
-  fontSize: '14px',
-  color: '#1c1e21',
-  outline: 'none',
-  appearance: 'none',
-  WebkitAppearance: 'none',
-  MozAppearance: 'none',
-  backgroundImage: 'none'
-};
 
 export default Home;

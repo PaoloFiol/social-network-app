@@ -1,162 +1,133 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api';
 
+const US_STATES = [
+  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS',
+  'KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY',
+  'NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'
+];
+
 function EditProfile() {
   const [form, setForm] = useState({
     email: '', firstName: '', lastName: '', city: '', state: '', aboutMe: '', profilePic: null
   });
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    API.get('/users/me').then(res => {
-      const { email, firstName, lastName, aboutMe, location } = res.data;
-      setForm({
-        email,
-        firstName,
-        lastName,
-        aboutMe: aboutMe || '',
-        city: location?.city || '',
-        state: location?.state || '',
-        profilePic: null
-      });
-    });
+    const loadProfile = async () => {
+      try {
+        const { data } = await API.get('/users/me');
+        const { email, firstName, lastName, aboutMe, location } = data;
+        setForm({
+          email,
+          firstName,
+          lastName,
+          aboutMe: aboutMe || '',
+          city: location?.city || '',
+          state: location?.state || '',
+          profilePic: null
+        });
+      } catch (err) {
+        setError('Could not load your profile.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
   }, []);
 
   const handleChange = e => {
     const { name, value, files } = e.target;
-    if (name === 'profilePic') {
-      setForm({ ...form, profilePic: files[0] });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    setForm(prev => ({
+      ...prev,
+      [name]: name === 'profilePic' ? files[0] : value
+    }));
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    const data = new FormData();
-    for (let key in form) {
-      if (form[key]) data.append(key, form[key]);
+    setMessage('');
+    setError('');
+    setSaving(true);
+
+    try {
+      const data = new FormData();
+      for (let key in form) {
+        if (form[key]) data.append(key, form[key]);
+      }
+      await API.put('/users/edit', data);
+      setMessage('Profile updated successfully.');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not update your profile.');
+    } finally {
+      setSaving(false);
     }
-    await API.put('/users/edit', data);
-    alert('Profile updated');
   };
 
+  if (loading) return <div className="empty-state">Loading profile editor...</div>;
+
   return (
-    <div style={wrapperStyle}>
-      <form onSubmit={handleSubmit} style={formStyle}>
-        <h2 style={headingStyle}>Edit Profile</h2>
+    <div className="auth-page">
+      <form onSubmit={handleSubmit} className="auth-card auth-card--wide form-grid">
+        <div>
+          <p className="eyebrow">Profile settings</p>
+          <h1 className="page-heading">Edit profile</h1>
+          <p className="page-subtitle">Keep your profile accurate so friends know who they are connecting with.</p>
+        </div>
 
-        <input
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="Email"
-          required
-          style={inputStyle}
-        />
-        <input
-          name="firstName"
-          value={form.firstName}
-          onChange={handleChange}
-          placeholder="First Name"
-          required
-          style={inputStyle}
-        />
-        <input
-          name="lastName"
-          value={form.lastName}
-          onChange={handleChange}
-          placeholder="Last Name"
-          required
-          style={inputStyle}
-        />
-        <input
-          name="city"
-          value={form.city}
-          onChange={handleChange}
-          placeholder="City"
-          style={inputStyle}
-        />
+        <div className="field-group">
+          <label htmlFor="email">Email</label>
+          <input id="email" name="email" type="email" value={form.email} onChange={handleChange} autoComplete="email" required />
+        </div>
 
-        <select
-          name="state"
-          value={form.state}
-          onChange={handleChange}
-          style={inputStyle}
-        >
-          <option value="">State</option>
-          {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS',
-  'KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY',
-  'NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'].map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+        <div className="form-grid form-grid--two">
+          <div className="field-group">
+            <label htmlFor="firstName">First name</label>
+            <input id="firstName" name="firstName" value={form.firstName} onChange={handleChange} autoComplete="given-name" required />
+          </div>
+          <div className="field-group">
+            <label htmlFor="lastName">Last name</label>
+            <input id="lastName" name="lastName" value={form.lastName} onChange={handleChange} autoComplete="family-name" required />
+          </div>
+        </div>
 
-        <textarea
-          name="aboutMe"
-          value={form.aboutMe}
-          onChange={handleChange}
-          placeholder="About Me (max 200 chars)"
-          maxLength="200"
-          style={{ ...inputStyle, height: '80px' }}
-        />
-        
-        <label style={{ marginBottom: '0.5rem' }}>Change Profile Picture:</label>
-        <input
-          type="file"
-          name="profilePic"
-          accept="image/*"
-          onChange={handleChange}
-          style={{ marginBottom: '1rem' }}
-        />
+        <div className="form-grid form-grid--two">
+          <div className="field-group">
+            <label htmlFor="city">City</label>
+            <input id="city" name="city" value={form.city} onChange={handleChange} autoComplete="address-level2" />
+          </div>
+          <div className="field-group">
+            <label htmlFor="state">State</label>
+            <select id="state" name="state" value={form.state} onChange={handleChange} autoComplete="address-level1">
+              <option value="">Select state</option>
+              {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
 
-        <button type="submit" style={buttonStyle}>Save Changes</button>
+        <div className="field-group">
+          <label htmlFor="aboutMe">About me</label>
+          <textarea id="aboutMe" name="aboutMe" value={form.aboutMe} onChange={handleChange} placeholder="A short intro (max 200 characters)" maxLength="200" />
+        </div>
+
+        <div className="field-group">
+          <label htmlFor="profilePic">Change profile picture</label>
+          <input id="profilePic" type="file" name="profilePic" accept="image/*" onChange={handleChange} />
+        </div>
+
+        <button type="submit" className="submit-button" disabled={saving}>
+          {saving ? 'Saving...' : 'Save changes'}
+        </button>
+
+        {message && <p className="status-message status-message--success">{message}</p>}
+        {error && <p className="status-message status-message--error">{error}</p>}
       </form>
     </div>
   );
 }
-
-// Styles
-const wrapperStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  padding: '2rem',
-  backgroundColor: '#f0f2f5',
-};
-
-const formStyle = {
-  backgroundColor: '#fff',
-  padding: '2rem',
-  borderRadius: '8px',
-  maxWidth: '500px',
-  width: '100%',
-  boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-  display: 'flex',
-  flexDirection: 'column',
-};
-
-const headingStyle = {
-  marginBottom: '1.5rem',
-  fontSize: '20px',
-  color: '#333',
-  textAlign: 'center'
-};
-
-const inputStyle = {
-  marginBottom: '1rem',
-  padding: '0.75rem',
-  fontSize: '14px',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-};
-
-const buttonStyle = {
-  padding: '0.75rem',
-  backgroundColor: '#1877f2',
-  color: 'white',
-  fontSize: '15px',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer'
-};
 
 export default EditProfile;

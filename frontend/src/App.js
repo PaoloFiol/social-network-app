@@ -34,7 +34,11 @@ function App() {
 
     syncLoginState(); // initial run
     window.addEventListener('storage', syncLoginState);
-    return () => window.removeEventListener('storage', syncLoginState);
+    window.addEventListener('auth-state-changed', syncLoginState);
+    return () => {
+      window.removeEventListener('storage', syncLoginState);
+      window.removeEventListener('auth-state-changed', syncLoginState);
+    };
   }, []);
 
   const ProtectedRoute = ({ children }) => {
@@ -44,7 +48,7 @@ function App() {
   return (
     <div className="App">
       <Navbar />
-      <main style={mainStyle}>
+      <main className="app-main">
         <Routes>
           <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
           <Route path="/register" element={<Register />} />
@@ -64,14 +68,5 @@ function App() {
     </div>
   );
 }
-
-// Styles
-const mainStyle = {
-  maxWidth: '800px',
-  margin: '0 auto',
-  padding: '1rem',
-  width: '100%',
-  boxSizing: 'border-box'
-};
 
 export default App;

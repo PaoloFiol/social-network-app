@@ -14,20 +14,23 @@ function Register() {
     firstName: '', lastName: '',
     city: '', state: '', aboutMe: '', profilePic: null
   });
-
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = e => {
     const { name, value, files } = e.target;
-    if (name === 'profilePic') {
-      setForm({ ...form, profilePic: files[0] });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    setForm(prev => ({
+      ...prev,
+      [name]: name === 'profilePic' ? files[0] : value
+    }));
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     try {
       const data = new FormData();
       for (let key in form) {
@@ -36,97 +39,84 @@ function Register() {
       await API.post('/auth/register', data);
       navigate('/login');
     } catch (err) {
-      alert(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={wrapper}>
-      <form onSubmit={handleSubmit} style={formStyle}>
-        <h2 style={heading}>Create an Account</h2>
+    <div className="auth-page">
+      <form onSubmit={handleSubmit} className="auth-card auth-card--wide form-grid">
+        <div>
+          <p className="eyebrow">Join the network</p>
+          <h1 className="page-heading">Create your profile</h1>
+          <p className="page-subtitle">Set up a profile, connect with friends, and start posting.</p>
+        </div>
 
-        <input name="username" value={form.username} placeholder="Username" onChange={handleChange} required style={input} />
-        <input name="email" type="email" value={form.email} placeholder="Email" onChange={handleChange} required style={input} />
-        <input name="password" type="password" value={form.password} placeholder="Password" onChange={handleChange} required style={input} />
-        <input name="firstName" value={form.firstName} placeholder="First Name" onChange={handleChange} required style={input} />
-        <input name="lastName" value={form.lastName} placeholder="Last Name" onChange={handleChange} required style={input} />
-        <input name="city" value={form.city} placeholder="City" onChange={handleChange} style={input} />
+        <div className="form-grid form-grid--two">
+          <div className="field-group">
+            <label htmlFor="firstName">First name</label>
+            <input id="firstName" name="firstName" value={form.firstName} onChange={handleChange} autoComplete="given-name" required />
+          </div>
+          <div className="field-group">
+            <label htmlFor="lastName">Last name</label>
+            <input id="lastName" name="lastName" value={form.lastName} onChange={handleChange} autoComplete="family-name" required />
+          </div>
+        </div>
 
-        <select name="state" value={form.state} onChange={handleChange} style={input}>
-          <option value="">Select State</option>
-          {US_STATES.map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+        <div className="form-grid form-grid--two">
+          <div className="field-group">
+            <label htmlFor="username">Username</label>
+            <input id="username" name="username" value={form.username} onChange={handleChange} autoComplete="username" required />
+          </div>
+          <div className="field-group">
+            <label htmlFor="email">Email</label>
+            <input id="email" name="email" type="email" value={form.email} onChange={handleChange} autoComplete="email" required />
+          </div>
+        </div>
 
-        <textarea
-          name="aboutMe"
-          value={form.aboutMe}
-          placeholder="About me (max 200 chars)"
-          maxLength="200"
-          onChange={handleChange}
-          style={{ ...input, height: '80px' }}
-        />
+        <div className="field-group">
+          <label htmlFor="password">Password</label>
+          <input id="password" name="password" type="password" value={form.password} onChange={handleChange} autoComplete="new-password" required />
+        </div>
 
-        <label style={{ marginBottom: '0.5rem' }}>Profile Picture:</label>
-        <input
-          name="profilePic"
-          type="file"
-          accept="image/*"
-          onChange={handleChange}
-          style={{ marginBottom: '1rem' }}
-        />
+        <div className="form-grid form-grid--two">
+          <div className="field-group">
+            <label htmlFor="city">City</label>
+            <input id="city" name="city" value={form.city} onChange={handleChange} autoComplete="address-level2" />
+          </div>
+          <div className="field-group">
+            <label htmlFor="state">State</label>
+            <select id="state" name="state" value={form.state} onChange={handleChange} autoComplete="address-level1">
+              <option value="">Select state</option>
+              {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
 
-        <button type="submit" style={button}>Register</button>
-        <p style={{ marginTop: '1rem' }}>
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
+        <div className="field-group">
+          <label htmlFor="aboutMe">About me</label>
+          <textarea id="aboutMe" name="aboutMe" value={form.aboutMe} placeholder="A short intro (max 200 characters)" maxLength="200" onChange={handleChange} />
+        </div>
+
+        <div className="field-group">
+          <label htmlFor="profilePic">Profile picture</label>
+          <input id="profilePic" name="profilePic" type="file" accept="image/*" onChange={handleChange} />
+        </div>
+
+        <button type="submit" className="submit-button" disabled={loading}>
+          {loading ? 'Creating account...' : 'Create account'}
+        </button>
+
+        {error && <p className="status-message status-message--error">{error}</p>}
+
+        <div className="form-footer">
+          <span>Already have an account? <Link to="/login">Log in</Link></span>
+        </div>
       </form>
     </div>
   );
 }
-
-// Styles
-const wrapper = {
-  display: 'flex',
-  justifyContent: 'center',
-  padding: '2rem',
-  backgroundColor: '#f0f2f5',
-  minHeight: '100vh'
-};
-
-const formStyle = {
-  width: '100%',
-  maxWidth: '500px',
-  background: 'white',
-  padding: '2rem',
-  borderRadius: '8px',
-  boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-  display: 'flex',
-  flexDirection: 'column'
-};
-
-const input = {
-  padding: '0.5rem',
-  marginBottom: '1rem',
-  borderRadius: '4px',
-  border: '1px solid #ccc',
-  fontSize: '1rem'
-};
-
-const button = {
-  padding: '0.6rem',
-  backgroundColor: '#1877f2',
-  color: 'white',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer'
-};
-
-const heading = {
-  marginBottom: '1.5rem',
-  textAlign: 'center',
-  color: '#333'
-};
 
 export default Register;

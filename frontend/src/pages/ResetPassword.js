@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import API from '../api';
 
 function ResetPassword() {
@@ -28,7 +28,7 @@ function ResetPassword() {
       setLoading(true);
       const res = await API.post(`/auth/reset-password/${token}`, { password });
       setSuccess(res.data.message || 'Password reset successfully.');
-      setTimeout(() => navigate('/login'), 3000);
+      setTimeout(() => navigate('/login'), 2500);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to reset password.');
     } finally {
@@ -37,79 +37,53 @@ function ResetPassword() {
   };
 
   return (
-    <div style={wrapperStyle}>
-      <form onSubmit={handleSubmit} style={formStyle}>
-        <h2 style={titleStyle}>Set New Password</h2>
-        <input
-          type="password"
-          placeholder="New password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={inputStyle}
-        />
-        <input
-          type="password"
-          placeholder="Confirm new password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          style={inputStyle}
-        />
-        <button type="submit" style={buttonStyle} disabled={loading}>
-          {loading ? 'Resetting...' : 'Reset Password'}
+    <div className="auth-page">
+      <form onSubmit={handleSubmit} className="auth-card form-grid">
+        <div>
+          <p className="eyebrow">Security</p>
+          <h1 className="page-heading">Set a new password</h1>
+          <p className="page-subtitle">Choose a password with at least 8 characters.</p>
+        </div>
+
+        <div className="field-group">
+          <label htmlFor="password">New password</label>
+          <input
+            id="password"
+            type="password"
+            placeholder="New password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
+            required
+          />
+        </div>
+
+        <div className="field-group">
+          <label htmlFor="confirmPassword">Confirm password</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+            required
+          />
+        </div>
+
+        <button type="submit" className="submit-button" disabled={loading}>
+          {loading ? 'Resetting...' : 'Reset password'}
         </button>
-        {success && <p style={{ color: 'green', marginTop: '1rem' }}>{success}</p>}
-        {error && <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
+
+        {success && <p className="status-message status-message--success">{success}</p>}
+        {error && <p className="status-message status-message--error">{error}</p>}
+
+        <div className="form-footer">
+          <Link to="/login">Back to login</Link>
+        </div>
       </form>
     </div>
   );
 }
-
-const wrapperStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  paddingTop: '3rem',
-  backgroundColor: '#f0f2f5',
-  height: '100vh',
-};
-
-const formStyle = {
-  backgroundColor: '#fff',
-  padding: '2rem',
-  borderRadius: '8px',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  width: '100%',
-  maxWidth: '400px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-};
-
-const titleStyle = {
-  marginBottom: '1.5rem',
-  fontSize: '22px',
-  color: '#333',
-};
-
-const inputStyle = {
-  width: '100%',
-  padding: '0.75rem',
-  marginBottom: '1rem',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  fontSize: '14px',
-};
-
-const buttonStyle = {
-  width: '100%',
-  padding: '0.75rem',
-  backgroundColor: '#1877f2',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-};
 
 export default ResetPassword;

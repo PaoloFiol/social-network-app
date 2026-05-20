@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaBell, FaHome, FaUser, FaUserEdit, FaUsers, FaEnvelope, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
+import {
+  FaBars,
+  FaBell,
+  FaEnvelope,
+  FaHome,
+  FaSignOutAlt,
+  FaTimes,
+  FaUser,
+  FaUserEdit,
+  FaUsers
+} from 'react-icons/fa';
 import API from '../api';
 
 function Navbar() {
@@ -28,408 +38,96 @@ function Navbar() {
     }
   }, [isLoggedIn]);
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [isLoggedIn]);
+
   const logout = () => {
     localStorage.clear();
+    window.dispatchEvent(new Event('auth-state-changed'));
+    setIsMobileMenuOpen(false);
     navigate('/login');
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  const closeMenu = () => setIsMobileMenuOpen(false);
+
+  const NotificationIcon = ({ type }) => {
+    const hasBadge = type === 'messages' ? hasUnreadMessages : hasUnseenNotifications;
+    const Icon = type === 'messages' ? FaEnvelope : FaBell;
+
+    return (
+      <span className="nav-link__icon">
+        <Icon aria-hidden="true" />
+        {hasBadge && <span className="nav-badge" />}
+      </span>
+    );
   };
 
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (isMobileMenuOpen && !event.target.closest('.mobile-menu') && !event.target.closest('.mobile-menu-button')) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMobileMenuOpen]);
-
-  const renderNavLinks = () => (
-    <>
-      <Link to="/" style={linkStyle}>
-        <FaHome style={iconStyle} />
-        <span style={linkText}>Home</span>
-      </Link>
-      
-      <Link to="/my-profile" style={linkStyle}>
-        <FaUser style={iconStyle} />
-        <span style={linkText}>My Profile</span>
-      </Link>
-      
-      <Link to="/edit-profile" style={linkStyle}>
-        <FaUserEdit style={iconStyle} />
-        <span style={linkText}>Edit Profile</span>
-      </Link>
-      
-      <Link to="/friends" style={linkStyle}>
-        <FaUsers style={iconStyle} />
-        <span style={linkText}>Friends</span>
-      </Link>
-
-      <Link to="/messages" style={linkStyle}>
-        <div style={iconContainer}>
-          <FaEnvelope style={iconStyle} />
-          {hasUnreadMessages && <span style={notificationBadge} />}
-        </div>
-        <span style={linkText}>Messages</span>
-      </Link>
-
-      <Link to="/notifications" style={linkStyle}>
-        <div style={iconContainer}>
-          <FaBell style={iconStyle} />
-          {hasUnseenNotifications && <span style={notificationBadge} />}
-        </div>
-        <span style={linkText}>Notifications</span>
-      </Link>
-    </>
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      const desktopNav = document.querySelector('.desktop-nav');
-      const mobileMenuButton = document.querySelector('.mobile-menu-button');
-      const mobileMenu = document.querySelector('.mobile-menu');
-
-      if (window.innerWidth <= 768) {
-        if (desktopNav) desktopNav.style.display = 'none';
-        if (mobileMenuButton) mobileMenuButton.style.display = 'block';
-        if (mobileMenu) mobileMenu.style.display = isMobileMenuOpen ? 'flex' : 'none';
-      } else {
-        if (desktopNav) desktopNav.style.display = 'flex';
-        if (mobileMenuButton) mobileMenuButton.style.display = 'none';
-        if (mobileMenu) mobileMenu.style.display = 'none';
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial call
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isMobileMenuOpen]);
-
   return (
-    <nav style={navStyle}>
-      <div style={navContent}>
-        <div style={logoContainer}>
-          <Link to="/" style={logoStyle}>
-            Social Network
-          </Link>
-        </div>
+    <nav className="site-nav">
+      <div className="site-nav__inner">
+        <Link className="site-nav__brand" to="/" onClick={closeMenu}>
+          <span className="brand-mark">SN</span>
+          <span>Social Network</span>
+        </Link>
 
-        {/* Mobile Menu Button */}
-        <button 
+        <button
           className="mobile-menu-button"
-          style={{
-            ...mobileMenuButton,
-            display: window.innerWidth <= 768 ? 'block' : 'none'
-          }}
-          onClick={toggleMobileMenu}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          type="button"
+          onClick={() => setIsMobileMenuOpen((open) => !open)}
+          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMobileMenuOpen}
         >
-          {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+          {isMobileMenuOpen ? <FaTimes aria-hidden="true" /> : <FaBars aria-hidden="true" />}
         </button>
 
-        {isLoggedIn ? (
-          <>
-            {/* Desktop Navigation */}
-            <div 
-              className="desktop-nav" 
-              style={{
-                ...desktopNavLinks,
-                display: window.innerWidth <= 768 ? 'none' : 'flex'
-              }}
-            >
-              <div style={centerNavLinks}>
-                {renderNavLinks()}
-              </div>
-              <button onClick={logout} style={logoutButton}>
-                <FaSignOutAlt style={iconStyle} />
-                <span style={linkText}>Log out</span>
+        <div className={`site-nav__links ${isMobileMenuOpen ? 'is-open' : ''}`}>
+          <Link className="nav-link" to="/" onClick={closeMenu}>
+            <FaHome aria-hidden="true" />
+            Home
+          </Link>
+
+          {isLoggedIn ? (
+            <>
+              <Link className="nav-link" to="/my-profile" onClick={closeMenu}>
+                <FaUser aria-hidden="true" />
+                Profile
+              </Link>
+              <Link className="nav-link" to="/edit-profile" onClick={closeMenu}>
+                <FaUserEdit aria-hidden="true" />
+                Edit
+              </Link>
+              <Link className="nav-link" to="/friends" onClick={closeMenu}>
+                <FaUsers aria-hidden="true" />
+                Friends
+              </Link>
+              <Link className="nav-link" to="/messages" onClick={closeMenu}>
+                <NotificationIcon type="messages" />
+                Messages
+              </Link>
+              <Link className="nav-link" to="/notifications" onClick={closeMenu}>
+                <NotificationIcon type="notifications" />
+                Alerts
+              </Link>
+              <button className="nav-button" type="button" onClick={logout}>
+                <FaSignOutAlt aria-hidden="true" />
+                Log out
               </button>
-            </div>
-
-            {/* Mobile Navigation */}
-            <div 
-              className="mobile-menu"
-              style={{ 
-                ...(isMobileMenuOpen ? mobileMenuOpen : mobileMenuClosed),
-                display: window.innerWidth <= 768 ? (isMobileMenuOpen ? 'flex' : 'none') : 'none'
-              }}
-            >
-              <div style={mobileMenuContent}>
-                <Link to="/" style={mobileLinkStyle}>
-                  <FaHome style={iconStyle} />
-                  <span style={linkText}>Home</span>
-                </Link>
-                
-                <Link to="/my-profile" style={mobileLinkStyle}>
-                  <FaUser style={iconStyle} />
-                  <span style={linkText}>My Profile</span>
-                </Link>
-                
-                <Link to="/edit-profile" style={mobileLinkStyle}>
-                  <FaUserEdit style={iconStyle} />
-                  <span style={linkText}>Edit Profile</span>
-                </Link>
-                
-                <Link to="/friends" style={mobileLinkStyle}>
-                  <FaUsers style={iconStyle} />
-                  <span style={linkText}>Friends</span>
-                </Link>
-
-                <Link to="/messages" style={mobileLinkStyle}>
-                  <div style={iconContainer}>
-                    <FaEnvelope style={iconStyle} />
-                    {hasUnreadMessages && <span style={notificationBadge} />}
-                  </div>
-                  <span style={linkText}>Messages</span>
-                </Link>
-
-                <Link to="/notifications" style={mobileLinkStyle}>
-                  <div style={iconContainer}>
-                    <FaBell style={iconStyle} />
-                    {hasUnseenNotifications && <span style={notificationBadge} />}
-                  </div>
-                  <span style={linkText}>Notifications</span>
-                </Link>
-
-                <button onClick={logout} style={mobileLogoutButton}>
-                  <FaSignOutAlt style={iconStyle} />
-                  <span style={linkText}>Log out</span>
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Desktop Navigation for non-logged-in users */}
-            <div 
-              className="desktop-nav" 
-              style={{
-                ...desktopNavLinks,
-                display: window.innerWidth <= 768 ? 'none' : 'flex'
-              }}
-            >
-              <div style={centerNavLinks}>
-                <Link to="/" style={linkStyle}>
-                  <FaHome style={iconStyle} />
-                  <span style={linkText}>Home</span>
-                </Link>
-                <Link to="/login" style={linkStyle}>
-                  <span style={linkText}>Login</span>
-                </Link>
-                <Link to="/register" style={linkStyle}>
-                  <span style={linkText}>Register</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Mobile Navigation for non-logged-in users */}
-            <div 
-              className="mobile-menu"
-              style={{ 
-                ...(isMobileMenuOpen ? mobileMenuOpen : mobileMenuClosed),
-                display: window.innerWidth <= 768 ? (isMobileMenuOpen ? 'flex' : 'none') : 'none'
-              }}
-            >
-              <div style={mobileMenuContent}>
-                <Link to="/" style={mobileLinkStyle}>
-                  <FaHome style={iconStyle} />
-                  <span style={linkText}>Home</span>
-                </Link>
-                <Link to="/login" style={mobileLinkStyle}>
-                  <span style={linkText}>Login</span>
-                </Link>
-                <Link to="/register" style={mobileLinkStyle}>
-                  <span style={linkText}>Register</span>
-                </Link>
-              </div>
-            </div>
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              <Link className="nav-link" to="/login" onClick={closeMenu}>
+                Login
+              </Link>
+              <Link className="nav-link" to="/register" onClick={closeMenu}>
+                Register
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );
 }
-
-// Styles
-const navStyle = {
-  backgroundColor: '#ffffff',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-  position: 'sticky',
-  top: 0,
-  zIndex: 1000,
-  padding: '0.5rem 0'
-};
-
-const navContent = {
-  maxWidth: '1200px',
-  margin: '0 auto',
-  padding: '0 1rem',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  position: 'relative'
-};
-
-const logoContainer = {
-  flex: '0 0 auto',
-  zIndex: 2
-};
-
-const logoStyle = {
-  color: '#1877f2',
-  textDecoration: 'none',
-  fontSize: '1.5rem',
-  fontWeight: 'bold'
-};
-
-const desktopNavLinks = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  flex: 1,
-  marginLeft: '2rem'
-};
-
-const navLinks = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  flex: 1,
-  marginLeft: '2rem'
-};
-
-const centerNavLinks = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '1.5rem',
-  flex: 1
-};
-
-const linkStyle = {
-  textDecoration: 'none',
-  color: '#1c1e21',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.5rem',
-  padding: '0.5rem',
-  borderRadius: '4px',
-  transition: 'background-color 0.2s',
-  ':hover': {
-    backgroundColor: '#f0f2f5'
-  }
-};
-
-const linkText = {
-  fontSize: '0.9rem',
-  fontWeight: '500'
-};
-
-const iconStyle = {
-  fontSize: '1.2rem',
-  color: '#65676b'
-};
-
-const iconContainer = {
-  position: 'relative'
-};
-
-const notificationBadge = {
-  position: 'absolute',
-  top: '-4px',
-  right: '-4px',
-  width: '8px',
-  height: '8px',
-  backgroundColor: '#e41e3f',
-  borderRadius: '50%'
-};
-
-const logoutButton = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.5rem',
-  padding: '0.5rem',
-  borderRadius: '4px',
-  transition: 'background-color 0.2s',
-  color: '#1c1e21',
-  marginLeft: '2rem',
-  ':hover': {
-    backgroundColor: '#f0f2f5'
-  }
-};
-
-const mobileMenuButton = {
-  display: 'none',
-  background: 'none',
-  border: 'none',
-  fontSize: '1.5rem',
-  color: '#65676b',
-  cursor: 'pointer',
-  padding: '0.5rem',
-  zIndex: 1001
-};
-
-const mobileMenuOpen = {
-  '@media (max-width: 768px)': {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    padding: '5rem 1rem 1rem',
-    margin: 0,
-    zIndex: 1000,
-    animation: 'slideIn 0.3s ease-out'
-  }
-};
-
-const mobileMenuClosed = {
-  '@media (max-width: 768px)': {
-    display: 'none'
-  }
-};
-
-const mobileMenuContent = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1rem',
-  width: '100%',
-  maxWidth: '300px',
-  margin: '0 auto'
-};
-
-const mobileLinkStyle = {
-  ...linkStyle,
-  padding: '1rem',
-  width: '100%',
-  justifyContent: 'flex-start',
-  borderBottom: '1px solid #f0f2f5',
-  ':hover': {
-    backgroundColor: '#f0f2f5'
-  }
-};
-
-const mobileLogoutButton = {
-  ...mobileLinkStyle,
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  textAlign: 'left',
-  color: '#e41e3f',
-  marginTop: '1rem'
-};
 
 export default Navbar;

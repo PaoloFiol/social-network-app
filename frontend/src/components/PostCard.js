@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../api';
 
@@ -22,6 +22,7 @@ function PostCard({ post, onUpdate }) {
   const handleComment = async (e) => {
     e.preventDefault();
     if (!isLoggedIn || !comment.trim()) return;
+
     try {
       const res = await API.put(`/posts/${post._id}/comment`, { text: comment });
       setComments(res.data.comments);
@@ -52,76 +53,78 @@ function PostCard({ post, onUpdate }) {
   };
 
   const visibleComments = showAllComments ? comments : comments.slice(-2);
+  const authorName = [post.user?.firstName, post.user?.lastName].filter(Boolean).join(' ') || post.user?.username || 'Unknown user';
+  const authorUsername = post.user?.username || 'unknown';
 
   return (
-    <div style={cardStyle}>
-      <div style={headerStyle}>
-        <div style={headerContentStyle}>
-          <strong>
-            <Link to={`/profile/${post.user?.username}`} style={linkStyle}>
-              {post.user?.firstName} {post.user?.lastName}
-            </Link>
-          </strong>{' '}
-          <span style={usernameStyle}>(@{post.user?.username})</span>
-          <div style={dateStyle}>
-            {new Date(post.createdAt).toLocaleDateString(undefined, {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
+    <article className="post-card">
+      <div className="post-card__header">
+        <div>
+          <Link to={`/profile/${authorUsername}`} className="post-author">
+            {authorName}
+          </Link>
+          <div>
+            <span className="post-username">@{authorUsername}</span>
+            <span className="post-date">
+              {' '}•{' '}
+              {new Date(post.createdAt).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </span>
           </div>
         </div>
-        {isLoggedIn && post.user?.username === currentUser && (
+
+        {isLoggedIn && authorUsername === currentUser && (
           <button
             onClick={handleDeletePost}
-            title="Delete Post"
-            style={deleteButtonStyle}
+            title="Delete post"
+            className="delete-button"
+            type="button"
           >
-            ✕
+            x
           </button>
         )}
       </div>
 
       {post.image && (
-        <div style={imageContainerStyle}>
-          <img
-            src={post.image}
-            alt="post"
-            style={imageStyle}
-          />
+        <div className="post-image-wrap">
+          <img src={post.image} alt="Post" />
         </div>
       )}
 
-      <p style={textStyle}>{post.text}</p>
+      {post.text && <p className="post-text">{post.text}</p>}
 
-      <div style={actionsStyle}>
-        <button 
-          onClick={handleLike} 
+      <div className="post-actions">
+        <button
+          onClick={handleLike}
+          className="like-button"
+          type="button"
           style={{
-            ...likeButtonStyle,
             cursor: isLoggedIn ? 'pointer' : 'default',
-            opacity: isLoggedIn ? 1 : 0.7
+            opacity: isLoggedIn ? 1 : 0.72
           }}
         >
-          ❤️ Like ({post.likes.length})
+          Like ({post.likes.length})
         </button>
       </div>
 
       {isLoggedIn && (
-        <form onSubmit={handleComment} style={commentFormStyle}>
+        <form onSubmit={handleComment} className="comment-form">
           <input
             value={comment}
             onChange={e => setComment(e.target.value)}
             placeholder="Write a comment..."
-            style={commentInputStyle}
+            aria-label="Write a comment"
           />
-          <button type="submit" style={commentButtonStyle}>
+          <button type="submit" className="comment-button">
             Comment
           </button>
         </form>
       )}
 
-      <div style={commentsContainerStyle}>
+      <div className="comments">
         {visibleComments.map((c) => {
           const user = typeof c.user === 'object' ? c.user : null;
           const username = user?.username || 'unknown';
@@ -130,265 +133,47 @@ function PostCard({ post, onUpdate }) {
             : username;
 
           return (
-            <div key={c._id} style={commentItemStyle}>
-              <div style={commentContentStyle}>
-                <div style={commentHeaderStyle}>
-                  <div style={commentUserStyle}>
-                    <strong>
-                      <Link to={`/profile/${username}`} style={commentLinkStyle}>
-                        {fullName}
-                      </Link>
-                    </strong>
-                    <span style={commentTextStyle}>: {c.text}</span>
-                  </div>
-                  <span style={commentDateStyle}>
-                    {new Date(c.createdAt).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </span>
+            <div key={c._id} className="comment-item">
+              <div className="comment-body">
+                <Link to={`/profile/${username}`} className="comment-author">
+                  {fullName}
+                </Link>
+                <span className="comment-text">: {c.text}</span>
+                <div className="comment-date">
+                  {new Date(c.createdAt).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
                 </div>
               </div>
+
               {isLoggedIn && username === currentUser && (
                 <button
                   onClick={() => handleDeleteComment(c._id)}
-                  title="Delete Comment"
-                  style={deleteCommentButtonStyle}
+                  title="Delete comment"
+                  className="delete-button"
+                  type="button"
                 >
-                  ✕
+                  x
                 </button>
               )}
             </div>
           );
         })}
+
         {comments.length > 2 && (
           <button
             onClick={() => setShowAllComments(!showAllComments)}
-            style={{
-              ...showMoreButtonStyle,
-              cursor: isLoggedIn ? 'pointer' : 'default',
-              opacity: isLoggedIn ? 1 : 0.7
-            }}
+            className="ghost-button"
+            type="button"
           >
             {showAllComments ? 'Hide comments' : 'Show all comments'}
           </button>
         )}
       </div>
-    </div>
+    </article>
   );
 }
-
-// Styles
-const cardStyle = {
-  border: '1px solid #ddd',
-  borderRadius: '8px',
-  padding: '1.5rem',
-  margin: '1rem auto',
-  backgroundColor: '#fff',
-  maxWidth: '800px',
-  boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-  width: '100%',
-  boxSizing: 'border-box'
-};
-
-const headerStyle = {
-  marginBottom: '1rem',
-  textAlign: 'left',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start'
-};
-
-const headerContentStyle = {
-  flex: 1
-};
-
-const linkStyle = {
-  color: '#1877f2',
-  textDecoration: 'none',
-  fontSize: '15px'
-};
-
-const usernameStyle = {
-  color: '#65676b',
-  fontSize: '14px'
-};
-
-const dateStyle = {
-  fontSize: '13px',
-  color: '#65676b',
-  marginTop: '4px'
-};
-
-const imageContainerStyle = {
-  width: '100%',
-  maxHeight: '500px',
-  margin: '1rem 0',
-  overflow: 'hidden',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: '#f9f9f9',
-  borderRadius: '8px'
-};
-
-const imageStyle = {
-  maxWidth: '100%',
-  maxHeight: '500px',
-  objectFit: 'contain',
-  borderRadius: '8px'
-};
-
-const textStyle = {
-  textAlign: 'left',
-  fontSize: '15px',
-  lineHeight: '1.5',
-  margin: '1rem 0'
-};
-
-const actionsStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '1rem',
-  marginTop: '1rem'
-};
-
-const likeButtonStyle = {
-  background: 'none',
-  border: 'none',
-  color: '#1877f2',
-  cursor: 'pointer',
-  fontSize: '14px',
-  padding: '0.5rem',
-  borderRadius: '4px',
-  transition: 'background-color 0.2s'
-};
-
-const commentFormStyle = {
-  display: 'flex',
-  gap: '0.5rem',
-  marginTop: '1rem',
-  flexWrap: 'wrap'
-};
-
-const commentInputStyle = {
-  flex: 1,
-  minWidth: '200px',
-  padding: '0.5rem',
-  border: '1px solid #ddd',
-  borderRadius: '4px',
-  fontSize: '14px'
-};
-
-const commentButtonStyle = {
-  padding: '0.5rem 1rem',
-  backgroundColor: '#1877f2',
-  color: 'white',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  fontSize: '14px',
-  whiteSpace: 'nowrap',
-  minWidth: 'fit-content'
-};
-
-const commentsContainerStyle = {
-  marginTop: '1rem',
-  textAlign: 'left'
-};
-
-const commentItemStyle = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  marginBottom: '0.75rem',
-  padding: '0.5rem',
-  borderRadius: '4px',
-  backgroundColor: '#f0f2f5'
-};
-
-const commentContentStyle = {
-  flex: 1,
-  marginRight: '0.5rem'
-};
-
-const commentLinkStyle = {
-  color: '#1877f2',
-  textDecoration: 'none',
-  fontSize: '14px'
-};
-
-const commentHeaderStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  width: '100%',
-  gap: '8px'
-};
-
-const commentUserStyle = {
-  display: 'flex',
-  alignItems: 'baseline',
-  gap: '0px',
-  flex: 1,
-  minWidth: 0
-};
-
-const commentTextStyle = {
-  fontSize: '14px',
-  color: '#1c1e21',
-  wordBreak: 'break-word',
-  flex: 1,
-  minWidth: 0
-};
-
-const commentDateStyle = {
-  fontSize: '12px',
-  color: '#65676b',
-  whiteSpace: 'nowrap',
-  flexShrink: 0
-};
-
-const showMoreButtonStyle = {
-  background: 'none',
-  border: 'none',
-  color: '#1877f2',
-  cursor: 'pointer',
-  fontSize: '13px',
-  padding: '0.5rem 0',
-  marginTop: '0.5rem',
-  transition: 'color 0.2s'
-};
-
-const deleteButtonStyle = {
-  background: 'none',
-  color: '#ff4444',
-  border: 'none',
-  cursor: 'pointer',
-  fontSize: '20px',
-  fontWeight: 'bold',
-  padding: '0',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'color 0.2s',
-  marginLeft: '10px'
-};
-
-const deleteCommentButtonStyle = {
-  background: 'none',
-  color: '#ff4444',
-  border: 'none',
-  marginLeft: '8px',
-  cursor: 'pointer',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  padding: '0',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'color 0.2s'
-};
 
 export default PostCard;
