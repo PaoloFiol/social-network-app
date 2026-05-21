@@ -3,7 +3,48 @@ import { Link } from 'react-router-dom';
 import API from '../api';
 import PostForm from '../components/PostForm';
 import PostCard from '../components/PostCard';
-import { FaBolt, FaComments, FaImage, FaSort, FaUserFriends } from 'react-icons/fa';
+import { FaBell, FaCamera, FaCommentDots, FaHeart, FaPaperPlane, FaSort } from 'react-icons/fa';
+
+const stories = [
+  { name: 'Maya', label: 'Weekend hike' },
+  { name: 'Leo', label: 'Coffee run' },
+  { name: 'Nina', label: 'New playlist' },
+  { name: 'Andre', label: 'Game night' }
+];
+
+const previewPosts = [
+  {
+    id: 'preview-1',
+    initials: 'MC',
+    name: 'Maya Chen',
+    handle: 'maya',
+    time: '12 min ago',
+    text: 'Morning walk turned into a mini photo shoot. The sky was doing too much in the best way.',
+    stats: { likes: 128, comments: 18 },
+    comments: [
+      { name: 'Leo', text: 'That light is unreal.' },
+      { name: 'Nina', text: 'Save this route for Saturday?' }
+    ]
+  },
+  {
+    id: 'preview-2',
+    initials: 'AR',
+    name: 'Andre Rivera',
+    handle: 'andre',
+    time: '34 min ago',
+    text: 'Hosting board games tonight. Bring snacks, strong opinions, and your best poker face.',
+    stats: { likes: 74, comments: 9 },
+    comments: [
+      { name: 'Sam', text: 'I am absolutely bringing the rematch energy.' }
+    ]
+  }
+];
+
+const suggestedPeople = [
+  { initials: 'JS', name: 'Jade Santos', detail: '3 mutual friends' },
+  { initials: 'ET', name: 'Evan Torres', detail: 'Lives nearby' },
+  { initials: 'PK', name: 'Priya Kapoor', detail: 'New here' }
+];
 
 function Home() {
   const [posts, setPosts] = useState([]);
@@ -38,32 +79,44 @@ function Home() {
       {!isLoggedIn && (
         <section className="home-hero" aria-labelledby="home-hero-title">
           <div>
-            <p className="eyebrow">Community Feed</p>
-            <h1 id="home-hero-title">A full-stack social app with real-time features.</h1>
+            <p className="eyebrow">Welcome to Social Network</p>
+            <h1 id="home-hero-title">Share moments, catch up, and keep conversations going.</h1>
             <p>
-              Create profiles, share photo posts, like and comment, manage friends,
-              and chat through a polished MERN-style application.
+              Follow friends, post updates, react to what they share, and jump into private chats
+              when a comment turns into a conversation.
             </p>
             <div className="hero-actions">
-              <Link className="button-primary" to="/register">Create account</Link>
+              <Link className="button-primary" to="/register">Join Social Network</Link>
               <Link className="button-secondary" to="/login">Log in</Link>
             </div>
           </div>
 
-          <div className="feature-panel" aria-label="App highlights">
-            <div className="feature-item"><FaComments /> Real-time private messaging</div>
-            <div className="feature-item"><FaUserFriends /> Friend requests and profile discovery</div>
-            <div className="feature-item"><FaImage /> Photo posts with likes and comments</div>
-            <div className="feature-item"><FaBolt /> Notifications for social activity</div>
+          <div className="feature-panel" aria-label="Social Network highlights">
+            <div className="feature-item"><FaCamera /> Share photos and everyday updates</div>
+            <div className="feature-item"><FaHeart /> React to friends' posts</div>
+            <div className="feature-item"><FaCommentDots /> Keep threads alive with comments</div>
+            <div className="feature-item"><FaPaperPlane /> Message friends privately</div>
           </div>
         </section>
       )}
 
       <section className="feed-grid" aria-label="Social feed">
         <div className="feed-column">
+          {!isLoggedIn && (
+            <div className="story-rail" aria-label="Stories">
+              {stories.map((story) => (
+                <div className="story-card" key={story.name}>
+                  <span className="story-avatar">{story.name.slice(0, 1)}</span>
+                  <strong>{story.name}<br />{story.label}</strong>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="feed-toolbar">
             <div>
-              <h2>{isLoggedIn ? 'Your feed' : 'Public feed preview'}</h2>
+              <h2>{isLoggedIn ? 'Home' : 'Around Social Network'}</h2>
+              {!isLoggedIn && <p className="demo-label">See what people are sharing right now.</p>}
             </div>
 
             <label className="sort-control">
@@ -74,9 +127,9 @@ function Home() {
                 onChange={e => setSortOrder(e.target.value)}
                 aria-label="Sort posts"
               >
-                <option value="newest">Newest</option>
+                <option value="newest">Latest</option>
                 <option value="oldest">Oldest</option>
-                <option value="mostLiked">Most liked</option>
+                <option value="mostLiked">Most loved</option>
               </select>
             </label>
           </div>
@@ -87,21 +140,65 @@ function Home() {
             sortedPosts.map(post => (
               <PostCard key={post._id} post={post} onUpdate={fetchPosts} />
             ))
-          ) : (
+          ) : isLoggedIn ? (
             <div className="empty-feed">
-              <strong>No posts yet.</strong>
-              <p>Be the first to start the conversation.</p>
+              <strong>Your feed is quiet.</strong>
+              <p>Share a post or connect with friends to get things moving.</p>
+            </div>
+          ) : (
+            <div className="demo-feed">
+              {previewPosts.map(post => (
+                <article className="post-card" key={post.id}>
+                  <div className="post-card__header">
+                    <div className="post-author-row">
+                      <span className="demo-avatar">{post.initials}</span>
+                      <div>
+                        <strong className="post-author">{post.name}</strong>
+                        <div>
+                          <span className="post-username">@{post.handle}</span>
+                          <span className="post-date"> · {post.time}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="post-text">{post.text}</p>
+                  <div className="post-actions">
+                    <button className="like-button" type="button"><FaHeart /> {post.stats.likes} Likes</button>
+                    <button className="share-button" type="button"><FaCommentDots /> {post.stats.comments} Comments</button>
+                    <Link className="share-button" to="/register">Join in</Link>
+                  </div>
+                  <div className="comments">
+                    {post.comments.map(comment => (
+                      <div className="demo-comment" key={`${post.id}-${comment.name}`}>
+                        <strong>{comment.name}</strong>
+                        <span className="comment-text">{comment.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              ))}
             </div>
           )}
         </div>
 
-        <aside className="sidebar-card" aria-label="Project summary">
-          <h3>Project snapshot</h3>
-          <p>
-            Built with React, Express, MongoDB, JWT auth, image uploads, and Socket.IO
-            messaging. Designed to show full-stack product flow beyond a static demo.
-          </p>
-          {!isLoggedIn && <Link className="button-secondary" to="/register">Try the app</Link>}
+        <aside className="sidebar-card" aria-label="Suggested people">
+          <h3>People you may know</h3>
+          {suggestedPeople.map(person => (
+            <div className="suggested-person" key={person.name}>
+              <span className="demo-avatar">{person.initials}</span>
+              <span className="person-copy">
+                {person.name}
+                <span>{person.detail}</span>
+              </span>
+            </div>
+          ))}
+          {!isLoggedIn && <Link className="button-secondary" to="/register">Find your friends</Link>}
+          {isLoggedIn && (
+            <>
+              <h3>What's happening</h3>
+              <p><FaBell /> New comments and friend requests will show up in your notifications.</p>
+            </>
+          )}
         </aside>
       </section>
     </div>

@@ -70,7 +70,7 @@ function PostForm({ onPostCreated }) {
   return (
     <form onSubmit={handleSubmit} className="post-form">
       <textarea
-        placeholder={isLoggedIn ? "What's on your mind?" : 'Log in to create a post'}
+        placeholder={isLoggedIn ? "What's happening?" : 'Log in to share something'}
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={3}
@@ -98,7 +98,7 @@ function PostForm({ onPostCreated }) {
             onClick={(e) => !isLoggedIn && (e.preventDefault(), navigate('/login'))}
           >
             <FaImage aria-hidden="true" />
-            Add Photo
+            Photo
           </label>
           <input
             id="image-upload"
@@ -119,7 +119,7 @@ function PostForm({ onPostCreated }) {
           }}
           disabled={isSubmitting || !isLoggedIn || (!text.trim() && !image)}
         >
-          {isSubmitting ? 'Posting...' : 'Post'}
+          {isSubmitting ? 'Sharing...' : 'Share'}
         </button>
       </div>
 

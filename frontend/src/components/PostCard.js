@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FaHeart, FaRegCommentDots, FaRegHeart, FaShare } from 'react-icons/fa';
 import API from '../api';
 
 function PostCard({ post, onUpdate }) {
@@ -7,6 +8,7 @@ function PostCard({ post, onUpdate }) {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const currentUser = localStorage.getItem('username');
+  const currentUserId = localStorage.getItem('userId');
   const isLoggedIn = !!localStorage.getItem('token');
 
   useEffect(() => {
@@ -55,24 +57,36 @@ function PostCard({ post, onUpdate }) {
   const visibleComments = showAllComments ? comments : comments.slice(-2);
   const authorName = [post.user?.firstName, post.user?.lastName].filter(Boolean).join(' ') || post.user?.username || 'Unknown user';
   const authorUsername = post.user?.username || 'unknown';
+  const authorInitial = authorName.slice(0, 1).toUpperCase();
+  const isLiked = post.likes?.some((like) => {
+    if (typeof like === 'object') return like._id === currentUserId;
+    return like === currentUserId;
+  });
+
+  const sharePost = () => {
+    navigator.clipboard?.writeText(window.location.href);
+  };
 
   return (
     <article className="post-card">
       <div className="post-card__header">
-        <div>
-          <Link to={`/profile/${authorUsername}`} className="post-author">
-            {authorName}
-          </Link>
+        <div className="post-author-row">
+          <span className="demo-avatar">{authorInitial}</span>
           <div>
-            <span className="post-username">@{authorUsername}</span>
-            <span className="post-date">
-              {' '}•{' '}
-              {new Date(post.createdAt).toLocaleDateString(undefined, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              })}
-            </span>
+            <Link to={`/profile/${authorUsername}`} className="post-author">
+              {authorName}
+            </Link>
+            <div>
+              <span className="post-username">@{authorUsername}</span>
+              <span className="post-date">
+                {' '}·{' '}
+                {new Date(post.createdAt).toLocaleDateString(undefined, {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -88,13 +102,13 @@ function PostCard({ post, onUpdate }) {
         )}
       </div>
 
+      {post.text && <p className="post-text">{post.text}</p>}
+
       {post.image && (
         <div className="post-image-wrap">
           <img src={post.image} alt="Post" />
         </div>
       )}
-
-      {post.text && <p className="post-text">{post.text}</p>}
 
       <div className="post-actions">
         <button
@@ -106,7 +120,16 @@ function PostCard({ post, onUpdate }) {
             opacity: isLoggedIn ? 1 : 0.72
           }}
         >
-          Like ({post.likes.length})
+          {isLiked ? <FaHeart aria-hidden="true" /> : <FaRegHeart aria-hidden="true" />}
+          {post.likes.length} {post.likes.length === 1 ? 'Like' : 'Likes'}
+        </button>
+        <button className="share-button" type="button">
+          <FaRegCommentDots aria-hidden="true" />
+          {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
+        </button>
+        <button className="share-button" type="button" onClick={sharePost}>
+          <FaShare aria-hidden="true" />
+          Share
         </button>
       </div>
 
@@ -115,11 +138,11 @@ function PostCard({ post, onUpdate }) {
           <input
             value={comment}
             onChange={e => setComment(e.target.value)}
-            placeholder="Write a comment..."
-            aria-label="Write a comment"
+            placeholder="Add a comment..."
+            aria-label="Add a comment"
           />
           <button type="submit" className="comment-button">
-            Comment
+            Send
           </button>
         </form>
       )}
@@ -138,7 +161,7 @@ function PostCard({ post, onUpdate }) {
                 <Link to={`/profile/${username}`} className="comment-author">
                   {fullName}
                 </Link>
-                <span className="comment-text">: {c.text}</span>
+                <span className="comment-text">{c.text}</span>
                 <div className="comment-date">
                   {new Date(c.createdAt).toLocaleDateString(undefined, {
                     month: 'short',
