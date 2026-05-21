@@ -7,6 +7,7 @@ function PostCard({ post, onUpdate }) {
   const [showAllComments, setShowAllComments] = useState(false);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
+  const [isImageOpen, setIsImageOpen] = useState(false);
   const currentUser = localStorage.getItem('username');
   const currentUserId = localStorage.getItem('userId');
   const isLoggedIn = !!localStorage.getItem('token');
@@ -106,7 +107,9 @@ function PostCard({ post, onUpdate }) {
 
       {post.image && (
         <div className="post-image-wrap">
-          <img src={post.image} alt="Post" />
+          <button className="post-image-button" type="button" onClick={() => setIsImageOpen(true)} aria-label="Enlarge post image">
+            <img src={post.image} alt="Post" />
+          </button>
         </div>
       )}
 
@@ -195,6 +198,15 @@ function PostCard({ post, onUpdate }) {
           </button>
         )}
       </div>
+
+      {isImageOpen && (
+        <div className="image-modal" role="dialog" aria-modal="true" aria-label="Post image preview" onClick={() => setIsImageOpen(false)}>
+          <button className="image-modal__close" type="button" onClick={() => setIsImageOpen(false)} aria-label="Close image preview">
+            x
+          </button>
+          <img src={post.image} alt="Post enlarged" onClick={(event) => event.stopPropagation()} />
+        </div>
+      )}
     </article>
   );
 }

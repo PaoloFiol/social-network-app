@@ -94,7 +94,9 @@ const ChatView = () => {
     if (!input.trim() || !id) return;
 
     const encryptedText = encryptMessage(input);
+    const tempId = `temp-${Date.now()}`;
     const newMsg = {
+      _id: tempId,
       sender: id,
       receiver: userId,
       content: encryptedText,
@@ -110,10 +112,15 @@ const ChatView = () => {
     setInput('');
 
     try {
-      await API.post('/messages', {
+      const { data } = await API.post('/messages', {
         receiverId: userId,
         encryptedText
       });
+      setMessages((prev) => prev.map((message) => message._id === tempId ? {
+        ...data,
+        sender: normalizeId(data.sender?._id || data.sender),
+        receiver: normalizeId(data.receiver?._id || data.receiver)
+      } : message));
     } catch (err) {
       console.error('Failed to send message:', err);
       setError('Message could not be saved.');
@@ -137,6 +144,19 @@ const ChatView = () => {
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const deleteMessage = async (messageId) => {
+    if (!messageId || messageId.startsWith('temp-')) return;
+    if (!window.confirm('Delete this message from your view?')) return;
+
+    try {
+      await API.delete(`/messages/single/${messageId}`);
+      setMessages((prev) => prev.filter((message) => message._id !== messageId));
+    } catch (err) {
+      console.error('Failed to delete message:', err);
+      setError('Could not delete that message.');
+    }
   };
 
   return (
@@ -166,7 +186,20 @@ const ChatView = () => {
 
           return (
             <div key={`${msg._id || i}-${msg.timestamp || ''}`} className={`message-row ${isMe ? 'is-me' : 'is-them'}`}>
-              <div className="message-bubble">{text}</div>
+              <div className="message-line">
+                <div className="message-bubble">{text}</div>
+                {msg._id && (
+                  <button
+                    className="message-delete"
+                    type="button"
+                    onClick={() => deleteMessage(msg._id)}
+                    title="Delete message"
+                    aria-label="Delete message"
+                  >
+                    x
+                  </button>
+                )}
+              </div>
               <div className="message-meta">{formatTimestamp(msg.timestamp)}</div>
             </div>
           );

@@ -97,3 +97,33 @@ exports.deleteMessagesWithUser = async (req, res) => {
     res.status(500).json({ message: 'Failed to delete messages', error: err.message });
   }
 };
+
+// Soft-delete one message from current user's view
+exports.deleteMessageForMe = async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+    const { messageId } = req.params;
+
+    const message = await Message.findOneAndUpdate(
+      {
+        _id: messageId,
+        $or: [
+          { sender: currentUserId },
+          { receiver: currentUserId }
+        ]
+      },
+      {
+        $addToSet: { deletedFor: currentUserId }
+      },
+      { new: true }
+    );
+
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    res.json({ message: 'Message deleted from your view.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete message', error: err.message });
+  }
+};

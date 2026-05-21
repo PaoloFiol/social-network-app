@@ -579,6 +579,49 @@ a:hover {
   object-fit: contain;
 }
 
+.post-image-button {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(20, 16, 18, 0.86);
+}
+
+.image-modal img {
+  max-width: min(100%, 1100px);
+  max-height: 88vh;
+  border-radius: 18px;
+  object-fit: contain;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+}
+
+.image-modal__close {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink);
+  background: #ffffff;
+  font-weight: 950;
+}
+
 .post-text {
   margin: 16px 18px;
   color: var(--ink);
@@ -1030,6 +1073,16 @@ a:hover {
   max-width: min(72%, 520px);
 }
 
+.message-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-row.is-me .message-line {
+  flex-direction: row-reverse;
+}
+
 .message-row.is-me {
   align-self: flex-end;
   align-items: flex-end;
@@ -1063,6 +1116,24 @@ a:hover {
   margin-top: 4px;
   color: var(--muted);
   font-size: 0.75rem;
+}
+
+.message-delete {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--danger);
+  background: var(--surface);
+  font-size: 0.78rem;
+  font-weight: 950;
+  opacity: 0;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.message-row:hover .message-delete,
+.message-delete:focus-visible {
+  opacity: 1;
 }
 
 .typing-note {

@@ -40,12 +40,6 @@ const previewPosts = [
   }
 ];
 
-const suggestedPeople = [
-  { initials: 'JS', name: 'Jade Santos', detail: '3 mutual friends' },
-  { initials: 'ET', name: 'Evan Torres', detail: 'Lives nearby' },
-  { initials: 'PK', name: 'Priya Kapoor', detail: 'New here' }
-];
-
 function Home() {
   const [posts, setPosts] = useState([]);
   const [sortOrder, setSortOrder] = useState('newest');
@@ -181,21 +175,16 @@ function Home() {
           )}
         </div>
 
-        <aside className="sidebar-card" aria-label="Suggested people">
-          <h3>People you may know</h3>
-          {suggestedPeople.map(person => (
-            <div className="suggested-person" key={person.name}>
-              <span className="demo-avatar">{person.initials}</span>
-              <span className="person-copy">
-                {person.name}
-                <span>{person.detail}</span>
-              </span>
-            </div>
-          ))}
-          {!isLoggedIn && <Link className="button-secondary" to="/register">Find your friends</Link>}
+        <aside className="sidebar-card" aria-label="Get started">
+          <h3>{isLoggedIn ? 'What is happening' : 'Make it yours'}</h3>
+          {!isLoggedIn && (
+            <>
+              <p>Create an account to post updates, upload photos, comment, like, and message friends privately.</p>
+              <Link className="button-secondary" to="/register">Create your account</Link>
+            </>
+          )}
           {isLoggedIn && (
             <>
-              <h3>What's happening</h3>
               <p><FaBell /> New comments and friend requests will show up in your notifications.</p>
             </>
           )}

@@ -11,6 +11,10 @@ function Notifications() {
     try {
       const res = await API.get('/notifications');
       setNotifications(res.data);
+      if (res.data.some(notification => !notification.seen)) {
+        await API.put('/notifications/mark-seen');
+        window.dispatchEvent(new Event('notifications-seen'));
+      }
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
       setError('Could not load notifications.');

@@ -36,6 +36,9 @@ function Navbar() {
     if (isLoggedIn) {
       fetchStatus();
     }
+
+    window.addEventListener('notifications-seen', fetchStatus);
+    return () => window.removeEventListener('notifications-seen', fetchStatus);
   }, [isLoggedIn]);
 
   useEffect(() => {
